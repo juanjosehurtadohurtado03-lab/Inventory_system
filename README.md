@@ -1,9 +1,6 @@
 # 📦 Inventory System API
 
-Sistema de control de inventario y reabastecimiento de mercancía desarrollado con una arquitectura limpia (Router -> Service -> Repository), diseñado para optimizar procesos y preparar automatizaciones.
-
-# Estado:
-En desarrollo.
+Sistema de control de inventario y reabastecimiento de mercancía desarrollado con una arquitectura limpia, diseñado para optimizar procesos y preparar automatizaciones.
 
 ## Tecnologías utilizadas
 * **Python 3.12**

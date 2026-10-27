@@ -104,5 +104,3 @@ class SaleService:
                 status_code=404,
                 detail=f'SQL Error: {e}'
             )
-            
-#TODO     NO FUNCIONO LA CANCELACION NI PAGO DE FACTURA.

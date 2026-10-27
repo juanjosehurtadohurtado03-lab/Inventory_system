@@ -8,7 +8,7 @@ class CRUD_products:
         self.db = db
         
     def post_by_name(self, product: ProductCreate):
-        return self.db.query(ProductModel).filter(ProductModel.name.ilike(f'%{product.name}%')).first()
+        return self.db.query(ProductModel).filter(ProductModel.name.ilike(f'%{product.name}%', ProductModel.is_active == True)).first()
 
     def get_all_products(self, id: int = None, name: str = None):
         if id or name:
@@ -36,9 +36,6 @@ class CRUD_products:
 
     def get_by_id_or_name(self, product_id: int, name: str):
         return self.db.query(ProductModel).filter((ProductModel.id == product_id) | (ProductModel.name.ilike(f'%{name}%')), ProductModel.is_active == True).first()
-
-    def restock(self, product: ProductModel, product_change: ProductCreate):
-        return product
     
     def search_product_by_id(self, product_id: int):
-        return self.db.query(ProductModel).filter(ProductModel.id == product_id).first()
+        return self.db.query(ProductModel).filter(ProductModel.id == product_id, ProductModel.is_active == True).first()

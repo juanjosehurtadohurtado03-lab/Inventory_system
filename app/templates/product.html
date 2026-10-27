@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos - Inventario</title>
+    <!-- Tailwind CSS vía CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slateCustom: '#0f172a',
+                        cardBg: '#1e293b',
+                        emeraldAccent: '#10b981',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slateCustom text-slate-100 min-h-screen font-sans antialiased">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white">📦 Panel de Inventario</h1>
+            </div>
+            <button onclick="openModal('create')" class="bg-emeraldAccent hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+                <span>➕ Nuevo Producto</span>
+            </button>
+        </header>
+
+        <!-- Barra de Búsqueda -->
+        <div class="bg-cardBg p-4 rounded-xl shadow-md mb-6 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex gap-4 flex-1 max-w-xl">
+                <input type="number" id="searchId" min="1" placeholder="Buscar por ID (mín. 1)..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emeraldAccent w-1/3">
+                <input type="text" id="searchName" placeholder="Buscar por Nombre..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emeraldAccent flex-1">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="filterProductsViaJS()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium transition">Filtrar</button>
+                <button onclick="resetSearch()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition">Limpiar</button>
+            </div>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="bg-cardBg rounded-xl shadow-xl overflow-hidden border border-slate-800">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
+                            <th class="py-3 px-6">ID</th>
+                            <th class="py-3 px-6">Nombre</th>
+                            <th class="py-3 px-6">Precio</th>
+                            <th class="py-3 px-6">Stock</th>
+                            <th class="py-3 px-6 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody" class="divide-y divide-slate-800 text-sm">
+                        <!-- RENDERIZADO INICIAL CON JINJA2 -->
+                        {% if products %}
+                            {% for p in products %}
+                            <tr class="hover:bg-slate-800/40 transition" 
+                                data-id="{{ p.id }}" 
+                                data-name="{{ p.name }}" 
+                                data-price="{{ p.price }}" 
+                                data-stock="{{ p.stock }}">
+                                <td class="py-4 px-6 font-mono text-slate-400">#{{ p.id }}</td>
+                                <td class="py-4 px-6 font-medium text-white">{{ p.name }}</td>
+                                <td class="py-4 px-6 text-slate-300">${{ p.price }}</td>
+                                <td class="py-4 px-6 text-slate-300">{{ p.stock }}</td>
+                                <td class="py-4 px-6 text-right space-x-2">
+                                    <button class="btn-edit text-indigo-400 hover:text-indigo-300 text-xs font-semibold bg-indigo-500/10 px-2.5 py-1.5 rounded-lg border border-indigo-500/20">Editar</button>
+                                    <button class="btn-delete text-rose-400 hover:text-rose-300 text-xs font-semibold bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20">Eliminar</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-slate-500">No hay productos registrados en el inventario.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear / Editar Producto -->
+    <div id="productModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-cardBg border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
+            <h2 id="modalTitle" class="text-xl font-bold mb-4 text-white">Nuevo Producto</h2>
+            <form id="productForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editProductId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre</label>
+                    <input type="text" id="inputName" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emeraldAccent">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Precio (Entero)</label>
+                    <input type="number" step="1" id="inputPrice" required min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emeraldAccent">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Stock / Cantidad</label>
+                    <input type="number" id="inputStock" required min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emeraldAccent">
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeModal()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition">Cancelar</button>
+                    <button type="submit" class="bg-emeraldAccent hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm transition">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const API_URL = '/product';
+
+        // Escuchador global de eventos
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-edit')) {
+                const tr = e.target.closest('tr');
+                openModal(
+                    'edit', 
+                    tr.dataset.id, 
+                    tr.dataset.name, 
+                    tr.dataset.price, 
+                    tr.dataset.stock
+                );
+            }
+            
+            if (e.target.classList.contains('btn-delete')) {
+                const tr = e.target.closest('tr');
+                deleteProduct(tr.dataset.id);
+            }
+        });
+
+        async function filterProductsViaJS() {
+            const id = document.getElementById('searchId').value;
+            const name = document.getElementById('searchName').value;
+            
+            if (id && parseInt(id) < 1) {
+                alert('Santa Cachucha... El ID no puede ser menor al 1.');
+                return;
+            }
+
+            // Apunta al nuevo endpoint JSON de búsqueda
+            let url = `${API_URL}/search?`;
+            if (id) url += `id=${id}&`;
+            if (name) url += `name=${name}&`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Error al buscar');
+                const products = await response.json();
+                renderTableDynamically(products);
+            } catch (error) {
+                console.error(error);
+                alert('Error al filtrar los productos.');
+            }
+        }
+
+        function renderTableDynamically(products) {
+            const tbody = document.getElementById('productTableBody');
+            if (!products || products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500">No se encontraron productos.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = products.map(p => `
+                <tr class="hover:bg-slate-800/40 transition" 
+                    data-id="${p.id}" 
+                    data-name="${p.name}" 
+                    data-price="${p.price}" 
+                    data-stock="${p.stock}">
+                    <td class="py-4 px-6 font-mono text-slate-400">#${p.id}</td>
+                    <td class="py-4 px-6 font-medium text-white">${p.name}</td>
+                    <td class="py-4 px-6 text-slate-300">$${p.price}</td>
+                    <td class="py-4 px-6 text-slate-300">${p.stock}</td>
+                    <td class="py-4 px-6 text-right space-x-2">
+                        <button class="btn-edit text-indigo-400 hover:text-indigo-300 text-xs font-semibold bg-indigo-500/10 px-2.5 py-1.5 rounded-lg border border-indigo-500/20">Editar</button>
+                        <button class="btn-delete text-rose-400 hover:text-rose-300 text-xs font-semibold bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20">Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById('editProductId').value;
+            const data = {
+                name: document.getElementById('inputName').value,
+                price: parseInt(document.getElementById('inputPrice').value), // Manejado como Entero
+                stock: parseInt(document.getElementById('inputStock').value)
+            };
+
+            let url = API_URL + '/';
+            let method = 'POST';
+
+            if (id) {
+                url = `${API_URL}/${id}`;
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                closeModal();
+                location.reload();
+            } else {
+                alert('Error al procesar la operación en el servidor.');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
+            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            if (res.status === 204) {
+                location.reload();
+            } else {
+                alert('No se pudo eliminar el producto.');
+            }
+        }
+
+        function openModal(mode, id = '', name = '', price = '', stock = '') {
+            document.getElementById('productModal').classList.remove('hidden');
+            document.getElementById('productModal').classList.add('flex');
+            if (mode === 'edit') {
+                document.getElementById('modalTitle').innerText = 'Editar Producto #' + id;
+                document.getElementById('editProductId').value = id;
+                document.getElementById('inputName').value = name;
+                document.getElementById('inputPrice').value = price;
+                document.getElementById('inputStock').value = stock;
+            } else {
+                document.getElementById('modalTitle').innerText = 'Nuevo Producto / Reabastecer';
+                document.getElementById('productForm').reset();
+                document.getElementById('editProductId').value = '';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.add('hidden');
+            document.getElementById('productModal').classList.remove('flex');
+        }
+
+        function resetSearch() {
+            document.getElementById('searchId').value = '';
+            document.getElementById('searchName').value = '';
+            location.reload();
+        }
+    </script>
+</body>
+</html>

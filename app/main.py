@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api.routers.products_router import router as product_router
 from app.api.routers.sale_router import router as sale_router
+from fastapi.staticfiles import StaticFiles
 
 from app.database.base import Base
 from app.database.connect import engine
@@ -13,5 +14,7 @@ app = FastAPI(
     description='API RESTful de inventario y ventas.'
 )
 
-app.include_router(product_router, prefix='/api/routers')
-app.include_router(sale_router, prefix='/api/routers')
+app.mount("/static", StaticFiles(directory='static'), name='static')
+
+app.include_router(product_router, prefix='/products')
+app.include_router(sale_router, prefix='/sales')

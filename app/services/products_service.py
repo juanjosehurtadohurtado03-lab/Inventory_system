@@ -17,8 +17,6 @@ class ProductServices:
                 product_db.price = product.price
             else:
                 product_db.stock += product.stock
-            if product_db.is_active == False:
-                product_db.is_active = True
             self.repo.db.commit()
             self.repo.db.refresh(product_db)
             return product_db
@@ -66,11 +64,7 @@ class ProductServices:
                 status_code=404,
                 detail=f'No se ha encontrado el producto ID {product_id}.'
             )
-        print(f"Stock antes: {product.stock}, Sumando/Devolviendo: {update_stock}")
         product.stock += update_stock
-        print(f"Stock después: {product.stock}")
-        if product.is_active == False:
-            product.is_active = True
     
     def soft_delete(self, product_id: int):
         product = self.repo.get_by_id(product_id)
