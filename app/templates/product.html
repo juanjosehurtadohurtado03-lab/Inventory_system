@@ -20,66 +20,219 @@
         }
     </script>
 </head>
-<body class="bg-slateCustom text-slate-100 min-h-screen font-sans antialiased">
+<body class="bg-slateCustom text-slate-100 min-h-screen font-sans antialiased selection:bg-emeraldAccent selection:text-slate-950">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Header -->
-        <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-700/80 pb-6">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white">📦 Panel de Inventario</h1>
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">📦</span>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-white">Panel de Inventario</h1>
+                </div>
+                <p class="text-sm text-slate-400 mt-1">Administración, catálogo y reabastecimiento de productos</p>
             </div>
-            <button onclick="openModal('create')" class="bg-emeraldAccent hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
-                <span>➕ Nuevo Producto</span>
+            <button onclick="openModal('create')" class="bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-200 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                <span>Nuevo Producto</span>
             </button>
         </header>
 
-        <!-- Barra de Búsqueda -->
-        <div class="bg-cardBg p-4 rounded-xl shadow-md mb-6 flex flex-wrap gap-4 items-center justify-between">
-            <div class="flex gap-4 flex-1 max-w-xl">
-                <input type="number" id="searchId" min="1" placeholder="Buscar por ID (mín. 1)..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emeraldAccent w-1/3">
-                <input type="text" id="searchName" placeholder="Buscar por Nombre..." class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emeraldAccent flex-1">
+        {# Normalización de la variable products en Jinja2 (acepta lista o elemento individual de ProductResponse) #}
+        {% set items = products if products is sequence else [products] if products else [] %}
+        {% set total_prods = items|length %}
+        {% set total_stock = items|map(attribute='stock')|sum if total_prods > 0 else 0 %}
+        {% set ns = namespace(low_stock_count=0) %}
+        {% for p in items %}
+            {% if p.stock <= 5 %}
+                {% set ns.low_stock_count = ns.low_stock_count + 1 %}
+            {% endif %}
+        {% endfor %}
+
+        <!-- Métricas / Resumen Rápido -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Productos</p>
+                    <p class="text-2xl font-bold text-white mt-1">{{ total_prods }}</p>
+                </div>
+                <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="filterProductsViaJS()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium transition">Filtrar</button>
-                <button onclick="resetSearch()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition">Limpiar</button>
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Stock Total en Almacén</p>
+                    <p class="text-2xl font-bold text-white mt-1">{{ total_stock }} <span class="text-xs font-normal text-slate-400">unidades</span></p>
+                </div>
+                <div class="p-3 bg-emerald-500/10 text-emeraldAccent rounded-lg border border-emerald-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                </div>
+            </div>
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alerta: Bajo Stock (≤ 5)</p>
+                    <p class="text-2xl font-bold {% if ns.low_stock_count > 0 %}text-amber-400{% else %}text-slate-400{% endif %} mt-1">
+                        {{ ns.low_stock_count }} <span class="text-xs font-normal text-slate-400">ítems</span>
+                    </p>
+                </div>
+                <div class="p-3 {% if ns.low_stock_count > 0 %}bg-amber-500/10 text-amber-400 border-amber-500/20{% else %}bg-slate-800 text-slate-500 border-slate-700{% endif %} rounded-lg border">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
             </div>
         </div>
 
+        <!-- Barra de Búsqueda y Filtros -->
+        <div class="bg-cardBg p-5 rounded-2xl shadow-md mb-6 border border-slate-800">
+            <form id="searchForm" onsubmit="handleSearchSubmit(event)" class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:max-w-2xl">
+                    <div class="relative w-full sm:w-1/3">
+                        <label for="searchId" class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">ID Producto</label>
+                        <input 
+                            type="number" 
+                            id="searchId" 
+                            name="id" 
+                            min="1" 
+                            step="1" 
+                            value="{{ request.query_params.get('id', '') }}" 
+                            oninput="filterRowsClientSide()" 
+                            placeholder="Ej. 1..." 
+                            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition"
+                        >
+                    </div>
+                    <div class="relative w-full sm:flex-1">
+                        <label for="searchName" class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Nombre</label>
+                        <input 
+                            type="text" 
+                            id="searchName" 
+                            name="name" 
+                            value="{{ request.query_params.get('name', '') }}" 
+                            oninput="filterRowsClientSide()" 
+                            placeholder="Buscar por nombre..." 
+                            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition"
+                        >
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full md:w-auto self-end">
+                    <button type="submit" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <span>Buscar</span>
+                    </button>
+                    <button type="button" onclick="resetSearch()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white flex items-center justify-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Limpiar</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Pill de filtros activos si se consultaron parámetros query -->
+            {% if request.query_params.get('id') or request.query_params.get('name') %}
+            <div class="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+                <span class="text-slate-400 font-medium">Filtros aplicados en servidor:</span>
+                {% if request.query_params.get('id') %}
+                <span class="bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-500/30 flex items-center gap-1">
+                    ID: <strong>#{{ request.query_params.get('id') }}</strong>
+                </span>
+                {% endif %}
+                {% if request.query_params.get('name') %}
+                <span class="bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-500/30 flex items-center gap-1">
+                    Nombre: <strong>"{{ request.query_params.get('name') }}"</strong>
+                </span>
+                {% endif %}
+                <button onclick="resetSearch()" class="text-rose-400 hover:text-rose-300 hover:underline ml-1">✕ Quitar todos</button>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- Tabla de Productos -->
-        <div class="bg-cardBg rounded-xl shadow-xl overflow-hidden border border-slate-800">
+        <div class="bg-cardBg rounded-2xl shadow-xl overflow-hidden border border-slate-800">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
-                            <th class="py-3 px-6">ID</th>
-                            <th class="py-3 px-6">Nombre</th>
-                            <th class="py-3 px-6">Precio</th>
-                            <th class="py-3 px-6">Stock</th>
-                            <th class="py-3 px-6 text-right">Acciones</th>
+                        <tr class="bg-slate-800/60 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700/80 select-none">
+                            <th class="py-3.5 px-6">ID</th>
+                            <th class="py-3.5 px-6">Nombre del Producto</th>
+                            <th class="py-3.5 px-6">Precio Unitario</th>
+                            <th class="py-3.5 px-6">Stock Actual</th>
+                            <th class="py-3.5 px-6">Estado</th>
+                            <th class="py-3.5 px-6 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody" class="divide-y divide-slate-800 text-sm">
-                        <!-- RENDERIZADO INICIAL CON JINJA2 -->
-                        {% if products %}
-                            {% for p in products %}
-                            <tr class="hover:bg-slate-800/40 transition" 
+                        {% if items and items|length > 0 %}
+                            {% for p in items %}
+                            <tr class="product-row hover:bg-slate-800/40 transition duration-150" 
                                 data-id="{{ p.id }}" 
                                 data-name="{{ p.name }}" 
                                 data-price="{{ p.price }}" 
                                 data-stock="{{ p.stock }}">
-                                <td class="py-4 px-6 font-mono text-slate-400">#{{ p.id }}</td>
-                                <td class="py-4 px-6 font-medium text-white">{{ p.name }}</td>
-                                <td class="py-4 px-6 text-slate-300">${{ p.price }}</td>
-                                <td class="py-4 px-6 text-slate-300">{{ p.stock }}</td>
-                                <td class="py-4 px-6 text-right space-x-2">
-                                    <button class="btn-edit text-indigo-400 hover:text-indigo-300 text-xs font-semibold bg-indigo-500/10 px-2.5 py-1.5 rounded-lg border border-indigo-500/20">Editar</button>
-                                    <button class="btn-delete text-rose-400 hover:text-rose-300 text-xs font-semibold bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20">Eliminar</button>
+                                <td class="py-4 px-6 font-mono text-slate-400 font-semibold">#{{ p.id }}</td>
+                                <td class="py-4 px-6 font-semibold text-white">{{ p.name }}</td>
+                                <td class="py-4 px-6 text-slate-200 font-medium">${{ p.price }}</td>
+                                <td class="py-4 px-6 text-slate-200 font-medium">{{ p.stock }}</td>
+                                <td class="py-4 px-6">
+                                    {% if p.stock <= 0 %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span> Agotado
+                                        </span>
+                                    {% elif p.stock <= 5 %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> Stock Crítico
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emeraldAccent"></span> Disponible
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+                                    <button class="btn-edit inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-200 text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg border border-indigo-500/30 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                        Editar
+                                    </button>
+                                    <button class="btn-delete inline-flex items-center gap-1 text-rose-400 hover:text-rose-200 text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg border border-rose-500/30 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Eliminar
+                                    </button>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <tr>
-                                <td colspan="5" class="py-6 text-center text-slate-500">No hay productos registrados en el inventario.</td>
+                            <tr id="emptyTableRow">
+                                <td colspan="6" class="py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="text-4xl mb-3">🔍</span>
+                                        <p class="text-base font-semibold text-slate-300">No hay productos registrados o coincidentes</p>
+                                        <p class="text-xs text-slate-500 mt-1 max-w-sm">No se encontraron registros en el inventario con los criterios seleccionados.</p>
+                                        <div class="mt-4 flex gap-2">
+                                            <button onclick="openModal('create')" class="bg-emeraldAccent hover:bg-emerald-600 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition">
+                                                + Registrar Producto
+                                            </button>
+                                            <button onclick="resetSearch()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium px-3 py-2 rounded-lg transition">
+                                                Restablecer Búsqueda
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         {% endif %}
                     </tbody>
@@ -89,39 +242,151 @@
     </div>
 
     <!-- Modal para Crear / Editar Producto -->
-    <div id="productModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-cardBg border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
-            <h2 id="modalTitle" class="text-xl font-bold mb-4 text-white">Nuevo Producto</h2>
+    <div id="productModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity">
+        <div class="bg-cardBg border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in duration-150">
+            <!-- Botón Cerrar X -->
+            <button type="button" onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+
+            <h2 id="modalTitle" class="text-xl font-bold mb-1 text-white">Nuevo Producto</h2>
+            <p id="modalDescription" class="text-xs text-slate-400 mb-5">Ingresa los datos del producto.</p>
+            
             <form id="productForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <input type="hidden" id="editProductId">
+                
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre</label>
-                    <input type="text" id="inputName" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emeraldAccent">
+                    <label for="inputName" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre del Producto</label>
+                    <input 
+                        type="text" 
+                        id="inputName" 
+                        required 
+                        placeholder="Ej. Harina de Trigo..." 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition text-sm"
+                    >
+                    <p class="text-[11px] text-slate-500 mt-1">El backend normaliza y capitaliza el nombre automáticamente.</p>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Precio (Entero)</label>
-                    <input type="number" step="1" id="inputPrice" required min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emeraldAccent">
+                    <label for="inputPrice" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Precio Unitario</label>
+                    <input 
+                        type="number" 
+                        step="0.01" 
+                        min="0.01" 
+                        id="inputPrice" 
+                        required 
+                        placeholder="Ej. 10" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition text-sm"
+                    >
+                    <p class="text-[11px] text-slate-500 mt-1">Debe ser un número entero mayor o igual a 1.</p>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Stock / Cantidad</label>
-                    <input type="number" id="inputStock" required min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emeraldAccent">
+                    <label for="inputStock" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Stock / Cantidad</label>
+                    <input 
+                        type="number" 
+                        step="1" 
+                        min="1" 
+                        id="inputStock" 
+                        required 
+                        placeholder="Ej. 50" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition text-sm"
+                    >
+                    <p id="stockHelpText" class="text-[11px] text-slate-500 mt-1">Cantidad a ingresar o reabastecer (mínimo 1).</p>
                 </div>
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" onclick="closeModal()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition">Cancelar</button>
-                    <button type="submit" class="bg-emeraldAccent hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm transition">Guardar</button>
+
+                <div class="flex justify-end gap-3 mt-6 pt-3 border-t border-slate-700/60">
+                    <button type="button" onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition text-slate-300">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnSubmitForm" class="bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-5 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                        <span id="btnSubmitText">Guardar</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal de Confirmación para Eliminación (Soft Delete) -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-cardBg border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center animate-in fade-in zoom-in duration-150">
+            <div class="h-12 w-12 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">¿Eliminar Producto?</h3>
+            <p class="text-xs text-slate-400 mb-4">
+                Este producto sera deshabilitado totalmente<strong id="deleteProductName" class="text-slate-200"></strong> (#<span id="deleteProductId"></span>). No estará disponible para ventas.
+            </p>
+            <div class="flex justify-center gap-3">
+                <button type="button" onclick="closeDeleteModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 transition">
+                    Cancelar
+                </button>
+                <button type="button" id="btnConfirmDelete" onclick="confirmDeleteAction()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-md shadow-rose-500/20">
+                    Sí, eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script>
-        const API_URL = '/product';
+        // Determinación dinámica de la ruta base del router según Jinja2 y la URL actual
+        const JINJA_PATH = "{{ request.url.path }}";
+        const CURRENT_PATH = window.location.pathname.replace(/\/+$/, '');
+        const BASE_PATH = (JINJA_PATH && JINJA_PATH !== 'None') 
+            ? JINJA_PATH.replace(/\/+$/, '') 
+            : CURRENT_PATH;
 
-        // Escuchador global de eventos
+        let productToDeleteId = null;
+
+        // Notificaciones Toast Modernas
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgClasses = {
+                success: 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200',
+                error: 'bg-rose-950/90 border-rose-500/40 text-rose-200',
+                warning: 'bg-amber-950/90 border-amber-500/40 text-amber-200',
+                info: 'bg-slate-800/90 border-slate-700 text-slate-200'
+            };
+
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${bgClasses[type] || bgClasses.info}`;
+            toast.innerHTML = `
+                <span class="font-bold text-sm">${icons[type] || 'ℹ'}</span>
+                <span class="flex-1">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animar entrada
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            // Auto-remover en 4 segundos
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Delegación de eventos para botones de tabla
         document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('btn-edit')) {
-                const tr = e.target.closest('tr');
+            const editBtn = e.target.closest('.btn-edit');
+            if (editBtn) {
+                const tr = editBtn.closest('tr');
                 openModal(
                     'edit', 
                     tr.dataset.id, 
@@ -129,130 +394,267 @@
                     tr.dataset.price, 
                     tr.dataset.stock
                 );
+                return;
             }
-            
-            if (e.target.classList.contains('btn-delete')) {
-                const tr = e.target.closest('tr');
-                deleteProduct(tr.dataset.id);
+
+            const deleteBtn = e.target.closest('.btn-delete');
+            if (deleteBtn) {
+                const tr = deleteBtn.closest('tr');
+                openDeleteModal(tr.dataset.id, tr.dataset.name);
+                return;
             }
         });
 
-        async function filterProductsViaJS() {
-            const id = document.getElementById('searchId').value;
-            const name = document.getElementById('searchName').value;
-            
-            if (id && parseInt(id) < 1) {
-                alert('Santa Cachucha... El ID no puede ser menor al 1.');
-                return;
-            }
-
-            // Apunta al nuevo endpoint JSON de búsqueda
-            let url = `${API_URL}/search?`;
-            if (id) url += `id=${id}&`;
-            if (name) url += `name=${name}&`;
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Error al buscar');
-                const products = await response.json();
-                renderTableDynamically(products);
-            } catch (error) {
-                console.error(error);
-                alert('Error al filtrar los productos.');
-            }
-        }
-
-        function renderTableDynamically(products) {
-            const tbody = document.getElementById('productTableBody');
-            if (!products || products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500">No se encontraron productos.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = products.map(p => `
-                <tr class="hover:bg-slate-800/40 transition" 
-                    data-id="${p.id}" 
-                    data-name="${p.name}" 
-                    data-price="${p.price}" 
-                    data-stock="${p.stock}">
-                    <td class="py-4 px-6 font-mono text-slate-400">#${p.id}</td>
-                    <td class="py-4 px-6 font-medium text-white">${p.name}</td>
-                    <td class="py-4 px-6 text-slate-300">$${p.price}</td>
-                    <td class="py-4 px-6 text-slate-300">${p.stock}</td>
-                    <td class="py-4 px-6 text-right space-x-2">
-                        <button class="btn-edit text-indigo-400 hover:text-indigo-300 text-xs font-semibold bg-indigo-500/10 px-2.5 py-1.5 rounded-lg border border-indigo-500/20">Editar</button>
-                        <button class="btn-delete text-rose-400 hover:text-rose-300 text-xs font-semibold bg-rose-500/10 px-2.5 py-1.5 rounded-lg border border-rose-500/20">Eliminar</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-            const id = document.getElementById('editProductId').value;
-            const data = {
-                name: document.getElementById('inputName').value,
-                price: parseInt(document.getElementById('inputPrice').value), // Manejado como Entero
-                stock: parseInt(document.getElementById('inputStock').value)
-            };
-
-            let url = API_URL + '/';
-            let method = 'POST';
-
-            if (id) {
-                url = `${API_URL}/${id}`;
-                method = 'PUT';
-            }
-
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                closeModal();
-                location.reload();
-            } else {
-                alert('Error al procesar la operación en el servidor.');
-            }
-        }
-
-        async function deleteProduct(id) {
-            if (!confirm('¿Seguro que deseas eliminar este producto?')) return;
-            const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-            if (res.status === 204) {
-                location.reload();
-            } else {
-                alert('No se pudo eliminar el producto.');
-            }
-        }
-
+        // Manejo de Modal Crear / Editar
         function openModal(mode, id = '', name = '', price = '', stock = '') {
-            document.getElementById('productModal').classList.remove('hidden');
-            document.getElementById('productModal').classList.add('flex');
+            const modal = document.getElementById('productModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
             if (mode === 'edit') {
                 document.getElementById('modalTitle').innerText = 'Editar Producto #' + id;
+                document.getElementById('modalDescription').innerText = 'Actualiza el nombre, precio o stock del producto existente.';
                 document.getElementById('editProductId').value = id;
                 document.getElementById('inputName').value = name;
                 document.getElementById('inputPrice').value = price;
                 document.getElementById('inputStock').value = stock;
+                document.getElementById('btnSubmitText').innerText = 'Guardar Cambios';
+                document.getElementById('stockHelpText').innerText = 'Nuevo stock asignado al producto.';
             } else {
                 document.getElementById('modalTitle').innerText = 'Nuevo Producto / Reabastecer';
+                document.getElementById('modalDescription').innerText = 'Si el nombre ya existe, se sumará el stock al producto existente.';
                 document.getElementById('productForm').reset();
                 document.getElementById('editProductId').value = '';
+                document.getElementById('btnSubmitText').innerText = 'Registrar Producto';
+                document.getElementById('stockHelpText').innerText = 'Cantidad a ingresar o reabastecer (mínimo 1).';
             }
+            document.getElementById('inputName').focus();
         }
 
         function closeModal() {
-            document.getElementById('productModal').classList.add('hidden');
-            document.getElementById('productModal').classList.remove('flex');
+            const modal = document.getElementById('productModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('productForm').reset();
+            document.getElementById('editProductId').value = '';
         }
 
+        // Modal de Eliminación (Soft Delete)
+        function openDeleteModal(id, name) {
+            productToDeleteId = id;
+            document.getElementById('deleteProductId').innerText = id;
+            document.getElementById('deleteProductName').innerText = `"${name}"`;
+            const modal = document.getElementById('deleteModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            productToDeleteId = null;
+            const modal = document.getElementById('deleteModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Cierre con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeDeleteModal();
+            }
+        });
+
+        // Envío de Formulario (Insert o Update con ProductCreate schema)
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('editProductId').value;
+            const rawName = document.getElementById('inputName').value.trim();
+            const rawPrice = document.getElementById('inputPrice').value;
+            const rawStock = document.getElementById('inputStock').value;
+
+            // Validación estricta acorde a ProductCreate (ge=1, enteros)
+            if (!rawName) {
+                showToast('El nombre del producto no puede estar vacío.', 'error');
+                return;
+            }
+
+            const price = parseInt(rawPrice, 10);
+            const stock = parseInt(rawStock, 10);
+
+            if (isNaN(price) || price < 1) {
+                showToast('El precio debe ser un número entero mayor o igual a 1.', 'error');
+                return;
+            }
+
+            if (isNaN(stock) || stock < 1) {
+                showToast('El stock debe ser un número entero mayor o igual a 1.', 'error');
+                return;
+            }
+
+            const payload = {
+                name: rawName,
+                price: price,
+                stock: stock
+            };
+
+            // Definición de URL y Método según endpoint del router:
+            // Insert: POST {BASE_PATH}/insert
+            // Update: PUT {BASE_PATH}/{id}
+            let targetUrl = id ? `${BASE_PATH}/${id}` : `${BASE_PATH}/insert`;
+            let method = id ? 'PUT' : 'POST';
+
+            const submitBtn = document.getElementById('btnSubmitForm');
+            const submitText = document.getElementById('btnSubmitText');
+            const originalText = submitText.innerText;
+            submitBtn.disabled = true;
+            submitText.innerText = 'Guardando...';
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'text/html,application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // El backend puede responder con 200, 201, 303 RedirectResponse o redirección seguida
+                if (response.ok || response.redirected || response.status === 303 || (response.status === 404 && response.redirected)) {
+                    showToast(id ? 'Producto actualizado exitosamente.' : 'Producto registrado o reabastecido.', 'success');
+                    closeModal();
+                    // Refrescar para sincronizar con la base de datos
+                    setTimeout(() => {
+                        window.location.href = BASE_PATH + '/';
+                    }, 500);
+                } else {
+                    let errorMsg = 'Error al procesar la operación.';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            if (Array.isArray(errorData.detail)) {
+                                errorMsg = errorData.detail.map(d => d.msg).join(', ');
+                            } else {
+                                errorMsg = errorData.detail;
+                            }
+                        }
+                    } catch (_) {}
+                    showToast(errorMsg, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error de conexión con el servidor.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitText.innerText = originalText;
+            }
+        }
+
+        // Confirmar Eliminación (DELETE endpoint)
+        async function confirmDeleteAction() {
+            if (!productToDeleteId) return;
+
+            const confirmBtn = document.getElementById('btnConfirmDelete');
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'Eliminando...';
+
+            try {
+                // DELETE {BASE_PATH}/{id}
+                const response = await fetch(`${BASE_PATH}/${productToDeleteId}`, {
+                    method: 'DELETE',
+                    headers: { 'Accept': 'text/html,application/json' }
+                });
+
+                // Manejo de éxito: 200, 204, 303 o si siguió una redirección
+                if (response.ok || response.redirected || response.status === 303 || (response.status === 404 && response.redirected)) {
+                    showToast(`Producto #${productToDeleteId} dado de baja.`, 'success');
+                    closeDeleteModal();
+                    setTimeout(() => {
+                        window.location.href = BASE_PATH + '/';
+                    }, 500);
+                } else {
+                    let errorMsg = 'No se pudo eliminar el producto.';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) errorMsg = errorData.detail;
+                    } catch (_) {}
+                    showToast(errorMsg, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error al conectar con el servidor para eliminar.', 'error');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = 'Sí, eliminar';
+            }
+        }
+
+        // Búsqueda en el servidor evitando parámetros vacíos (previene error 422 de FastAPI con int=None)
+        function handleSearchSubmit(event) {
+            if (event) event.preventDefault();
+
+            const idInput = document.getElementById('searchId').value.trim();
+            const nameInput = document.getElementById('searchName').value.trim();
+
+            if (idInput) {
+                const parsedId = parseInt(idInput, 10);
+                if (isNaN(parsedId) || parsedId < 1) {
+                    showToast('El ID de búsqueda debe ser un número entero mayor a 0.', 'warning');
+                    return;
+                }
+            }
+
+            const queryParams = new URLSearchParams();
+            if (idInput) queryParams.set('id', parseInt(idInput, 10));
+            if (nameInput) queryParams.set('name', nameInput);
+
+            const queryString = queryParams.toString();
+            window.location.href = BASE_PATH + (queryString ? `/?${queryString}` : '/');
+        }
+
+        // Limpiar búsqueda y regresar a la vista general
         function resetSearch() {
             document.getElementById('searchId').value = '';
             document.getElementById('searchName').value = '';
-            location.reload();
+            window.location.href = BASE_PATH + '/';
+        }
+
+        // Filtrado en tiempo real en el cliente para respuesta instantánea mientras se escribe
+        function filterRowsClientSide() {
+            const filterId = document.getElementById('searchId').value.trim().toLowerCase();
+            const filterName = document.getElementById('searchName').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('.product-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const rowId = (row.dataset.id || '').toLowerCase();
+                const rowName = (row.dataset.name || '').toLowerCase();
+
+                const matchId = !filterId || rowId === filterId || rowId.includes(filterId);
+                const matchName = !filterName || rowName.includes(filterName);
+
+                if (matchId && matchName) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Manejo de mensaje si todas las filas se ocultan con el filtro en vivo
+            let emptyMsg = document.getElementById('clientEmptyRow');
+            if (visibleCount === 0 && rows.length > 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('tr');
+                    emptyMsg.id = 'clientEmptyRow';
+                    emptyMsg.innerHTML = '<td colspan="6" class="py-8 text-center text-slate-500">Ningún producto visible coincide con el filtro en tiempo real. Presiona "Buscar" para consultar en la base de datos o limpia el filtro.</td>';
+                    document.getElementById('productTableBody').appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = '';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
         }
     </script>
 </body>

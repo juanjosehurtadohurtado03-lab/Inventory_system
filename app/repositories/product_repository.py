@@ -8,7 +8,7 @@ class CRUD_products:
         self.db = db
         
     def post_by_name(self, product: ProductCreate):
-        return self.db.query(ProductModel).filter(ProductModel.name.ilike(f'%{product.name}%', ProductModel.is_active == True)).first()
+        return self.db.query(ProductModel).filter(ProductModel.name.ilike(f'%{product.name}%'), ProductModel.is_active == True).first()
 
     def get_all_products(self, id: int = None, name: str = None):
         if id or name:
