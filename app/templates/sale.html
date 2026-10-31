@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punto de Venta y Facturación - Inventario Pro</title>
+    <!-- Tailwind CSS vía CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slateCustom: '#0f172a',
+                        cardBg: '#1e293b',
+                        cardHover: '#24334b',
+                        emeraldAccent: '#10b981',
+                        accentIndigo: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slateCustom text-slate-100 min-h-screen font-sans antialiased selection:bg-emeraldAccent selection:text-slate-950">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Barra de Navegación Principal -->
+    <nav class="sticky top-0 z-40 bg-cardBg/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Marca & Logo -->
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2.5 group">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition transform">
+                            🛒
+                        </div>
+                        <div>
+                            <span class="text-base font-extrabold tracking-tight text-white block leading-tight">TU SUPERMERCADO</span>
+                            <span class="text-[10px] text-emerald-400 uppercase tracking-widest block font-medium">Punto de Venta & Facturación</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Menú Central con Dropdown de Módulos -->
+                <div class="hidden md:flex items-center gap-2">
+                    <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Inicio
+                    </a>
+
+                    <!-- MENÚ DESPLEGABLE DE MÓDULOS -->
+                    <div class="relative" id="modulesDropdownContainer">
+                        <button onclick="toggleDropdown('modulesDropdown')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-emeraldAccent bg-emerald-500/10 border border-emerald-500/20 transition flex items-center gap-1.5 focus:outline-none">
+                            <span>Módulos y Rutas</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="modulesDropdown" class="hidden absolute left-0 mt-2 w-72 rounded-2xl bg-cardBg border border-slate-700 shadow-2xl p-2 z-50 animate-in fade-in zoom-in duration-150">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase px-3 py-1.5 tracking-wider">
+                                Routers del Sistema
+                            </div>
+                            
+                            <a href="/products/management/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group">
+                                <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-indigo-300">Gestión de Inventario</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Catálogo y reabastecimiento</p>
+                                    <span class="text-[10px] font-mono text-indigo-400/80">/products/management/</span>
+                                </div>
+                            </a>
+
+                            <a href="/sales/sale/" class="flex items-start gap-3 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-emerald-300">Punto de Venta & Facturas (Activo)</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Terminal POS y cobros</p>
+                                    <span class="text-[10px] font-mono text-emerald-400/80">/sales/sale/</span>
+                                </div>
+                            </a>
+
+                            <a href="/employees/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 group-hover:bg-sky-500/20">
+                                    👥
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-sky-300">Gestión de Empleados</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Turnos, cargos y personal</p>
+                                </div>
+                            </a>
+
+                            <div class="border-t border-slate-700/60 my-1"></div>
+
+                            <a href="/#estadisticas" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                                <span class="text-amber-400">📊</span>
+                                <span>Ver Estadísticas</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="/sales/sale/" class="px-3 py-2 rounded-lg text-sm font-semibold text-emeraldAccent bg-emerald-500/10 border border-emerald-500/20 transition">
+                        Caja & Ventas
+                    </a>
+                    <a href="/products/management/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Inventario
+                    </a>
+                    <a href="/employees/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Empleados
+                    </a>
+                </div>
+
+                <!-- Info Empleado & Hora en Vivo -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span id="liveClock" class="text-xs font-mono font-bold text-white">00:00:00</span>
+                        <span class="text-[10px] text-emerald-400 font-semibold">Caja #01 Operativa</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 pl-3 border-l border-slate-700">
+                        <div class="h-9 w-9 rounded-full bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold flex items-center justify-center text-xs shadow">
+                            POS
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Header de la Pantalla -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-5">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">💳</span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Terminal de Ventas & Facturación</h1>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                    Crea órdenes de venta con validación de stock, factura a clientes y gestiona el cobro o anulación.
+                </p>
+            </div>
+
+            <!-- Botones de Navegación Rápida -->
+            <div class="flex items-center gap-2">
+                <button onclick="document.getElementById('pendingInvoicesSection').scrollIntoView({behavior: 'smooth'})" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                    <span>⏳ Ver Facturas Pendientes</span>
+                    <span class="bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded-full font-bold text-[10px]" id="pendingCountBadge">
+                        {{ pending_sales|length if pending_sales else 0 }}
+                    </span>
+                </button>
+                <a href="/products/management/" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5">
+                    <span>📦 Ir a Inventario</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- GRID PRINCIPAL: CATÁLOGO DE PRODUCTOS (IZQ) + CARRITO/TICKET (DER) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- COLUMNA IZQUIERDA: CATÁLOGO Y BÚSQUEDA DE PRODUCTOS (7 COLS) -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-xl">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🔍</span>
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Productos Disponibles</h2>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">
+                            <span id="productCounter" class="text-emerald-400 font-bold">{{ products|length if products else 0 }}</span> productos en catálogo
+                        </span>
+                    </div>
+
+                    <!-- Buscador de Productos en Vivo -->
+                    <div class="relative mb-4">
+                        <input 
+                            type="text" 
+                            id="productSearchInput" 
+                            oninput="filterCatalogProducts()" 
+                            placeholder="Buscar producto por nombre o ID (ej. Harina, Aceite, 1)..." 
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition"
+                        >
+                        <span class="absolute right-3.5 top-2.5 text-slate-500 text-sm">🔎</span>
+                    </div>
+
+                    <!-- Grid de Productos -->
+                    <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[560px] overflow-y-auto pr-1">
+                        {% if products and products|length > 0 %}
+                            {% for p in products %}
+                            <div class="product-card bg-slate-900/80 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 transition duration-200 flex flex-col justify-between group"
+                                data-id="{{ p.id }}" 
+                                data-name="{{ p.name }}" 
+                                data-price="{{ p.price }}" 
+                                data-stock="{{ p.stock }}">
+                                <div>
+                                    <div class="flex items-start justify-between gap-2 mb-2">
+                                        <span class="text-xs font-mono font-semibold text-slate-400">#{{ p.id }}</span>
+                                        {% if p.stock <= 0 %}
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">Agotado</span>
+                                        {% elif p.stock <= 5 %}
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Bajo Stock: {{ p.stock }}</span>
+                                        {% else %}
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Stock: {{ p.stock }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <h3 class="text-sm font-bold text-white group-hover:text-emerald-300 transition">{{ p.name }}</h3>
+                                    <p class="text-base font-extrabold text-emeraldAccent mt-1">${{ p.price }} <span class="text-[11px] text-slate-400 font-normal">/ unid.</span></p>
+                                </div>
+
+                                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                                    <span class="text-[11px] text-slate-400">Disp: <strong>{{ p.stock }}</strong></span>
+                                    {% if p.stock > 0 %}
+                                    <button onclick="addToCart({{ p.id }}, '{{ p.name }}', {{ p.price }}, {{ p.stock }})" class="bg-emerald-500/10 hover:bg-emeraldAccent text-emerald-300 hover:text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-500/20 hover:border-transparent transition flex items-center gap-1">
+                                        <span>+ Agregar</span>
+                                    </button>
+                                    {% else %}
+                                    <button disabled class="bg-slate-800 text-slate-500 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-700 cursor-not-allowed">
+                                        Sin Existencia
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-span-2 py-12 text-center text-slate-500">
+                                <span class="text-3xl block mb-2">📦</span>
+                                No hay productos activos en inventario.
+                                <a href="/products/management/" class="text-emeraldAccent hover:underline block mt-2 font-semibold">Registrar productos</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: CARRITO & EMISIÓN DE FACTURA (5 COLS) -->
+            <div class="lg:col-span-5 space-y-4">
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-2xl sticky top-20">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🛒</span>
+                            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Orden de Venta</h2>
+                        </div>
+                        <button onclick="clearCart()" class="text-xs text-rose-400 hover:text-rose-300 hover:underline">
+                            Vaciar Carrito
+                        </button>
+                    </div>
+
+                    <!-- Datos del Cliente (SaleCreate schema) -->
+                    <div class="my-4">
+                        <label for="customerCi" class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+                            Cédula del Cliente (C.I. / RIF) <span class="text-rose-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-xs font-mono font-bold text-slate-400">V-</span>
+                            <input 
+                                type="text" 
+                                id="customerCi" 
+                                maxlength="8" 
+                                placeholder="12345678 (8 dígitos)" 
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white font-mono placeholder-slate-600 focus:outline-none focus:border-emeraldAccent focus:ring-1 focus:ring-emeraldAccent transition"
+                                oninput="validateCiInput(this)"
+                            >
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1" id="ciHelpText">
+                            Debe contener exactamente 8 dígitos numéricos (según esquema Pydantic).
+                        </p>
+                    </div>
+
+                    <!-- Lista de Ítems en Carrito -->
+                    <div class="border-t border-b border-slate-800 py-2 my-3">
+                        <div class="text-[11px] font-bold uppercase text-slate-400 grid grid-cols-12 mb-2 px-1">
+                            <span class="col-span-5">Producto</span>
+                            <span class="col-span-3 text-center">Cant.</span>
+                            <span class="col-span-3 text-right">Subtotal</span>
+                            <span class="col-span-1"></span>
+                        </div>
+
+                        <div id="cartItemsContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            <div id="emptyCartMessage" class="py-8 text-center text-slate-500 text-xs">
+                                🛒 El carrito está vacío.<br>Selecciona productos del catálogo a la izquierda.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de Totales -->
+                    <div class="space-y-1.5 text-xs text-slate-300 pt-1">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Ítems totales:</span>
+                            <span id="totalItemsCount" class="font-bold text-white">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Subtotal Neto:</span>
+                            <span id="cartSubtotal" class="font-bold text-white">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-base font-black text-white pt-2 border-t border-slate-700/80">
+                            <span>TOTAL A PAGAR:</span>
+                            <span id="cartTotal" class="text-emeraldAccent text-xl">$0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón Enviar Venta (POST /sales/sale/) -->
+                    <div class="mt-5">
+                        <button 
+                            type="button" 
+                            id="btnSubmitSale" 
+                            onclick="submitSaleOrder()" 
+                            class="w-full bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled
+                        >
+                            <span id="btnSubmitSaleText">Emitir Factura de Venta</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN: FACTURAS PENDIENTES DE PAGO (COBRO / CANCELACIÓN) -->
+        <section id="pendingInvoicesSection" class="pt-6 scroll-mt-20">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>⏳</span> Facturas Pendientes por Cobrar
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Facturas generadas en estado <code class="text-amber-300">PENDIENTE</code> listas para cobrar (<code class="text-emerald-300">PAGADO</code>) o cancelar (<code class="text-rose-300">CANCELADO</code>)
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-cardBg rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-800/60 text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-3 px-5">ID Factura</th>
+                                <th class="py-3 px-5">Cliente (C.I.)</th>
+                                <th class="py-3 px-5">Ítems Facturados</th>
+                                <th class="py-3 px-5">Monto Total</th>
+                                <th class="py-3 px-5">Estado</th>
+                                <th class="py-3 px-5 text-right">Acciones de Cobro</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800" id="pendingSalesTableBody">
+                            {% if pending_sales and pending_sales|length > 0 %}
+                                {% for sale in pending_sales %}
+                                <tr class="hover:bg-slate-800/40 transition" id="saleRow-{{ sale.id }}">
+                                    <td class="py-4 px-5 font-mono font-bold text-slate-400">#{{ "%04d"|format(sale.id) }}</td>
+                                    <td class="py-4 px-5 font-semibold text-white">V-{{ sale.ci_customer }}</td>
+                                    <td class="py-4 px-5 text-slate-300">
+                                        <div class="max-w-xs truncate">
+                                            {% for detail in sale.sale_details %}
+                                                <span class="inline-block bg-slate-800 px-2 py-0.5 rounded text-[11px] mr-1 mb-1">
+                                                    {{ detail.name }} x{{ detail.quantity }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-5 font-extrabold text-emeraldAccent text-sm">${{ sale.total }}</td>
+                                    <td class="py-4 px-5">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                            ⏳ PENDIENTE
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-5 text-right space-x-2 whitespace-nowrap">
+                                        <!-- Botón Cobrar (PAGADO) -->
+                                        <button onclick="handleStatusUpdate({{ sale.id }}, 'PAGADO')" class="inline-flex items-center gap-1 bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow-sm shadow-emerald-500/20">
+                                            <span>✓ Cobrar</span>
+                                        </button>
+
+                                        <!-- Botón Cancelar (CANCELADO) -->
+                                        <button onclick="handleStatusUpdate({{ sale.id }}, 'CANCELADO')" class="inline-flex items-center gap-1 bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs border border-rose-500/20 transition">
+                                            <span>✕ Anular</span>
+                                        </button>
+
+                                        <!-- Botón Ver Ticket -->
+                                        <a href="/sales/sale/invoice/{{ sale.id }}" target="_blank" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-semibold px-2.5 py-1.5 rounded-lg text-xs border border-sky-500/20 transition">
+                                            <span>🧾 Ticket</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr id="noPendingRow">
+                                    <td colspan="6" class="py-8 text-center text-slate-500">
+                                        No hay facturas pendientes en este momento. Todas las órdenes están saldadas o canceladas.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: HISTORIAL DE VENTAS RECIENTES -->
+        <section class="pt-6">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>📋</span> Historial Reciente de Operaciones
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Últimas 25 transacciones registradas en el sistema</p>
+                </div>
+            </div>
+
+            <div class="bg-cardBg rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-800/60 text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-3 px-5">ID</th>
+                                <th class="py-3 px-5">Cédula Cliente</th>
+                                <th class="py-3 px-5">Monto Total</th>
+                                <th class="py-3 px-5">Estado</th>
+                                <th class="py-3 px-5 text-right">Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {% if recent_sales and recent_sales|length > 0 %}
+                                {% for sale in recent_sales %}
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="py-3 px-5 font-mono text-slate-400 font-bold">#{{ "%04d"|format(sale.id) }}</td>
+                                    <td class="py-3 px-5 font-medium text-white">V-{{ sale.ci_customer }}</td>
+                                    <td class="py-3 px-5 font-bold text-slate-200">${{ sale.total }}</td>
+                                    <td class="py-3 px-5">
+                                        {% if sale.status == 'PAGADO' %}
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                ✓ PAGADO
+                                            </span>
+                                        {% elif sale.status == 'PENDIENTE' %}
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                                ⏳ PENDIENTE
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                                ✕ CANCELADO
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-5 text-right">
+                                        <a href="/sales/sale/invoice/{{ sale.id }}" target="_blank" class="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 font-semibold bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 transition">
+                                            <span>Ver / Imprimir Factura</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="py-6 text-center text-slate-500">
+                                        No hay registros de ventas.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal para Notificación de Venta Generada con Acciones Rápidas -->
+    <div id="saleSuccessModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-cardBg border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 text-center animate-in fade-in zoom-in duration-150">
+            <div class="h-14 w-14 rounded-full bg-emerald-500/10 text-emeraldAccent border border-emerald-500/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                ✓
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">¡Venta Registrada con Éxito!</h3>
+            <p class="text-xs text-slate-400 mb-4">
+                Se generó la factura <strong id="modalSaleIdText" class="text-white"></strong> para el cliente <span id="modalSaleCiText" class="font-mono text-emerald-300"></span> por un total de <strong id="modalSaleTotalText" class="text-emerald-400"></strong>.
+            </p>
+
+            <div class="flex flex-col gap-2 mt-5">
+                <a id="modalPrintInvoiceBtn" href="#" target="_blank" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-sky-600/20">
+                    <span>🧾 Imprimir Ticket Fiscal SENIAT</span>
+                </a>
+                <button type="button" id="modalPayNowBtn" onclick="payCreatedSaleNow()" class="w-full bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20">
+                    <span>✓ Cobrar Factura Inmediatamente (Marcar PAGADO)</span>
+                </button>
+                <button type="button" onclick="closeSaleSuccessModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 rounded-xl text-xs transition border border-slate-700 mt-1">
+                    Cerrar y Nueva Venta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript del Punto de Venta (POS) -->
+    <script>
+        // Estado local del carrito
+        let cart = [];
+        let newlyCreatedSaleId = null;
+
+        // Dropdown de navegación
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('modulesDropdownContainer');
+            if (container && !container.contains(e.target)) {
+                const dropdown = document.getElementById('modulesDropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        // Reloj en vivo
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) clockEl.innerText = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Notificaciones Toast
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgClasses = {
+                success: 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200',
+                error: 'bg-rose-950/90 border-rose-500/40 text-rose-200',
+                warning: 'bg-amber-950/90 border-amber-500/40 text-amber-200',
+                info: 'bg-slate-800/90 border-slate-700 text-slate-200'
+            };
+
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${bgClasses[type] || bgClasses.info}`;
+            toast.innerHTML = `<span class="font-bold text-sm">${icons[type] || 'ℹ'}</span><span class="flex-1">${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Validación en tiempo real del input de C.I. (8 dígitos numéricos)
+        function validateCiInput(input) {
+            // Eliminar caracteres no numéricos
+            input.value = input.value.replace(/\D/g, '');
+            const helpText = document.getElementById('ciHelpText');
+
+            if (input.value.length === 8) {
+                input.classList.remove('border-slate-700', 'border-rose-500');
+                input.classList.add('border-emeraldAccent');
+                helpText.innerText = '✓ Cédula válida (8 dígitos).';
+                helpText.className = 'text-[11px] text-emerald-400 mt-1';
+            } else {
+                input.classList.remove('border-emeraldAccent');
+                input.classList.add('border-slate-700');
+                helpText.innerText = `Faltan ${8 - input.value.length} dígitos (requiere exactamente 8).`;
+                helpText.className = 'text-[11px] text-slate-500 mt-1';
+            }
+            updateSubmitButtonState();
+        }
+
+        // Búsqueda de Productos en el Catálogo en vivo
+        function filterCatalogProducts() {
+            const query = document.getElementById('productSearchInput').value.trim().toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const id = (card.dataset.id || '').toLowerCase();
+                const name = (card.dataset.name || '').toLowerCase();
+
+                if (!query || id.includes(query) || name.includes(query)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const counter = document.getElementById('productCounter');
+            if (counter) counter.innerText = visibleCount;
+        }
+
+        // Agregar Producto al Carrito
+        function addToCart(id, name, price, maxStock) {
+            const existing = cart.find(item => item.id === id);
+
+            if (existing) {
+                if (existing.quantity + 1 > maxStock) {
+                    showToast(`No puedes superar el stock disponible (${maxStock} unidades) de ${name}.`, 'warning');
+                    return;
+                }
+                existing.quantity += 1;
+            } else {
+                if (maxStock < 1) {
+                    showToast(`El producto ${name} está agotado.`, 'error');
+                    return;
+                }
+                cart.push({
+                    id: id,
+                    name: name,
+                    price: price,
+                    quantity: 1,
+                    maxStock: maxStock
+                });
+            }
+
+            renderCart();
+            showToast(`Añadido: ${name}`, 'success');
+        }
+
+        // Modificar cantidad en carrito
+        function changeCartQuantity(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+
+            const newQty = item.quantity + delta;
+            if (newQty <= 0) {
+                removeFromCart(id);
+                return;
+            }
+            if (newQty > item.maxStock) {
+                showToast(`Stock máximo alcanzado (${item.maxStock}) para ${item.name}.`, 'warning');
+                return;
+            }
+
+            item.quantity = newQty;
+            renderCart();
+        }
+
+        // Establecer cantidad manualmente
+        function setCartQuantity(id, value) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+
+            let parsed = parseInt(value, 10);
+            if (isNaN(parsed) || parsed < 1) parsed = 1;
+            if (parsed > item.maxStock) {
+                parsed = item.maxStock;
+                showToast(`Ajustado al stock máximo disponible (${item.maxStock}).`, 'warning');
+            }
+            item.quantity = parsed;
+            renderCart();
+        }
+
+        // Eliminar producto del carrito
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            renderCart();
+        }
+
+        // Vaciar Carrito
+        function clearCart() {
+            if (cart.length === 0) return;
+            cart = [];
+            renderCart();
+            showToast('Carrito vaciado.', 'info');
+        }
+
+        // Renderizado Dinámico del Carrito
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const totalItemsEl = document.getElementById('totalItemsCount');
+            const subtotalEl = document.getElementById('cartSubtotal');
+            const totalEl = document.getElementById('cartTotal');
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div id="emptyCartMessage" class="py-8 text-center text-slate-500 text-xs">
+                        🛒 El carrito está vacío.<br>Selecciona productos del catálogo a la izquierda.
+                    </div>
+                `;
+                totalItemsEl.innerText = '0';
+                subtotalEl.innerText = '$0.00';
+                totalEl.innerText = '$0.00';
+                updateSubmitButtonState();
+                return;
+            }
+
+            let totalItems = 0;
+            let totalAmount = 0;
+
+            container.innerHTML = cart.map(item => {
+                const subtotal = item.price * item.quantity;
+                totalItems += item.quantity;
+                totalAmount += subtotal;
+
+                return `
+                    <div class="grid grid-cols-12 items-center gap-1 bg-slate-900/60 p-2 rounded-xl border border-slate-800 text-xs">
+                        <div class="col-span-5 truncate pr-1">
+                            <span class="font-bold text-white block truncate">${item.name}</span>
+                            <span class="text-[10px] text-slate-400">$${item.price} c/u</span>
+                        </div>
+                        <div class="col-span-3 flex items-center justify-center gap-1">
+                            <button onclick="changeCartQuantity(${item.id}, -1)" class="h-6 w-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center transition">-</button>
+                            <input type="number" min="1" max="${item.maxStock}" value="${item.quantity}" onchange="setCartQuantity(${item.id}, this.value)" class="w-10 bg-slate-950 border border-slate-700 rounded text-center text-xs text-white py-0.5 focus:outline-none">
+                            <button onclick="changeCartQuantity(${item.id}, 1)" class="h-6 w-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center transition">+</button>
+                        </div>
+                        <div class="col-span-3 text-right font-bold text-slate-200">
+                            $${subtotal.toFixed(2)}
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button onclick="removeFromCart(${item.id})" class="text-rose-400 hover:text-rose-200 p-1 transition" title="Eliminar">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalItemsEl.innerText = totalItems;
+            subtotalEl.innerText = `$${totalAmount.toFixed(2)}`;
+            totalEl.innerText = `$${totalAmount.toFixed(2)}`;
+
+            updateSubmitButtonState();
+        }
+
+        // Habilitar / deshabilitar botón de envío
+        function updateSubmitButtonState() {
+            const btn = document.getElementById('btnSubmitSale');
+            const ci = document.getElementById('customerCi').value.trim();
+            const isValidCi = /^\d{8}$/.test(ci);
+            const hasItems = cart.length > 0;
+
+            btn.disabled = !(isValidCi && hasItems);
+        }
+
+        // Enviar Orden de Venta (POST /sales/sale/)
+        async function submitSaleOrder() {
+            const ci = document.getElementById('customerCi').value.trim();
+            if (!/^\d{8}$/.test(ci)) {
+                showToast('La Cédula de Identidad debe tener exactamente 8 dígitos numéricos.', 'error');
+                return;
+            }
+
+            if (cart.length === 0) {
+                showToast('Agrega al menos un producto al carrito.', 'error');
+                return;
+            }
+
+            // Estructura acorde al esquema SaleCreate:
+            // ci_customer: str (8 dígitos)
+            // items: list[SaleData] donde cada ítem tiene id o name y quantity
+            const payload = {
+                ci_customer: ci,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity
+                }))
+            };
+
+            const btn = document.getElementById('btnSubmitSale');
+            const btnText = document.getElementById('btnSubmitSaleText');
+            btn.disabled = true;
+            btnText.innerText = 'Procesando Venta...';
+
+            try {
+                const response = await fetch('/sales/sale/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    newlyCreatedSaleId = data.id;
+
+                    showToast(`Venta #${data.id} creada con éxito.`, 'success');
+
+                    // Mostrar modal de éxito
+                    document.getElementById('modalSaleIdText').innerText = `#${data.id}`;
+                    document.getElementById('modalSaleCiText').innerText = `V-${data.ci_customer}`;
+                    document.getElementById('modalSaleTotalText').innerText = `$${parseFloat(data.total).toFixed(2)}`;
+                    document.getElementById('modalPrintInvoiceBtn').href = `/sales/sale/invoice/${data.id}`;
+
+                    document.getElementById('saleSuccessModal').classList.remove('hidden');
+                    document.getElementById('saleSuccessModal').classList.add('flex');
+
+                    // Resetear formulario y carrito
+                    cart = [];
+                    document.getElementById('customerCi').value = '';
+                    renderCart();
+                } else {
+                    let errMsg = 'Error al procesar la venta en el servidor.';
+                    try {
+                        const errData = await response.json();
+                        if (errData.detail) errMsg = errData.detail;
+                    } catch (_) {}
+                    showToast(errMsg, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error de conexión con el servidor de ventas.', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = 'Emitir Factura de Venta';
+            }
+        }
+
+        // Cobrar venta recién creada desde el modal
+        async function payCreatedSaleNow() {
+            if (!newlyCreatedSaleId) return;
+            await handleStatusUpdate(newlyCreatedSaleId, 'PAGADO');
+            closeSaleSuccessModal();
+            setTimeout(() => {
+                window.location.reload();
+            }, 600);
+        }
+
+        function closeSaleSuccessModal() {
+            document.getElementById('saleSuccessModal').classList.add('hidden');
+            document.getElementById('saleSuccessModal').classList.remove('flex');
+            newlyCreatedSaleId = null;
+            window.location.reload();
+        }
+
+        // Actualizar estado de factura: POST /sales/sale/{sale_id} con SaleUpdateStatus (PAGADO o CANCELADO)
+        async function handleStatusUpdate(saleId, newStatus) {
+            const confirmMsg = newStatus === 'PAGADO' 
+                ? `¿Confirmas el cobro y pago de la factura #${saleId}?` 
+                : `¿Seguro que deseas anular la factura #${saleId}? Los productos se devolverán al inventario.`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const response = await fetch(`/sales/sale/${saleId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    showToast(`Factura #${saleId} marcada como ${newStatus}.`, 'success');
+                    const row = document.getElementById(`saleRow-${saleId}`);
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        row.style.pointerEvents = 'none';
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    let errMsg = 'No se pudo actualizar el estado de la factura.';
+                    try {
+                        const errData = await response.json();
+                        if (errData.detail) errMsg = errData.detail;
+                    } catch (_) {}
+                    showToast(errMsg, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error de red al actualizar la factura.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+

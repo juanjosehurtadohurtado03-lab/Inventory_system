@@ -1,71 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factura</title>
+    <title>Factura de Venta #{{ bill_id }} - TU SUPERMERCADO</title>
+    <!-- Tailwind CSS vía CDN para estilos de pantalla -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @page {
-            size: 15mm;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-        }
-
-        .encabezado {
-            width: 100%;
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .invoice-card {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            @page {
+                margin: 8mm;
+                size: portrait;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="encabezado">
-        <h1>SENIAT</h1>
-        <p>J-123456789</p>
-        <h2>AUTOPARTES CARÚPANO C.A.</h2>
-        <p>Ubicacion</p>
-    </div>
-    <div class="info">
-        <P>CLIENTE: {{ client }}</P>
-        <div class="row">
-            <p>CI/RIF: {{ rif }}</p>
-            <p>-EST 002</p>
+<body class="bg-slate-900 text-slate-800 min-h-screen py-8 px-4 flex flex-col items-center justify-center font-sans antialiased">
+
+    <!-- Barra de Acciones Superior (Oculta al imprimir) -->
+    <div class="no-print w-full max-w-xl mb-4 flex items-center justify-between gap-3 bg-slate-800 p-3 rounded-2xl border border-slate-700 shadow-xl">
+        <a href="/sales/sale/" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-xl transition">
+            <span>← Volver a Punto de Venta</span>
+        </a>
+        <div class="flex items-center gap-2">
+            <a href="/" class="text-xs font-medium text-slate-400 hover:text-slate-200 px-2 py-1 transition">
+                Inicio
+            </a>
+            <button onclick="window.print()" class="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition hover:scale-[1.02] active:scale-[0.98]">
+                <span>🖨️ Imprimir Factura</span>
+            </button>
         </div>
-        <p>DIRECCION: CARUPANO EDO SUCCRE</p>
-        <p>AUTOPARTES CARÚPANO C.A.</p>
     </div>
-    <div class="bill">
-        <div class="bill_info_date">
-            <div class="bill_id">
-                <p>FACTURA:</p>
-                <p>{{ bill_id }}</p>
+
+    <!-- DOCUMENTO DE FACTURA FORMAL -->
+    <div class="invoice-card bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 p-8 text-slate-800">
+        
+        <!-- Encabezado de la Empresa -->
+        <div class="flex justify-between items-start border-b-2 border-slate-900 pb-5 mb-5">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-2xl">🛒</span>
+                    <h1 class="text-2xl font-black tracking-tight text-slate-900 uppercase">TU SUPERMERCADO, C.A.</h1>
+                </div>
+                <p class="text-xs font-bold text-slate-700 font-mono">RIF: J-40982315-6 • NIT: 0241982736</p>
+                <p class="text-[11px] text-slate-600 mt-0.5 leading-tight">
+                    Av. Principal de Comercio, Edif. Supermercado Central, PB.<br>
+                    Carúpano, Edo. Sucre - Venezuela.<br>
+                    Teléfono: (0294) 808-4321 • facturacion@tusupermercado.com
+                </p>
+                <span class="inline-block mt-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    Contribuyente Ordinario
+                </span>
             </div>
-            <div class="date">
-                <p>FECHA: {{ now_fecha }}</p>
-                <p>HORA: {{ now_time }}</p>
+
+            <div class="text-right">
+                <div class="bg-slate-900 text-white px-3 py-1.5 rounded-lg inline-block text-right mb-2">
+                    <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-300">Factura de Venta</p>
+                    <p class="text-base font-mono font-bold">N° FAC-{{ bill_id }}</p>
+                </div>
+                <p class="text-[11px] text-slate-600 font-mono">N° de Control: <strong>00-{{ bill_id }}</strong></p>
+                <p class="text-[11px] text-slate-600">Fecha: <strong>{{ now_fecha }}</strong></p>
+                <p class="text-[11px] text-slate-600">Hora: <strong>{{ now_time }}</strong></p>
             </div>
         </div>
-        <div class="bill_sells">
-            {% for product in products %}
-            <table>
-                <tr>
-                    <td>{{ product.cant }} x <strong>Bs.</strong> {{ product.price }}</td>
-                </tr>
-                <tr>
-                    <td>{{ product.name }}</td>
-                    <td><strong>(G)    </strong>Bs. {{ product.price }}</td>
-                </tr>
+
+        <!-- Datos del Cliente y Venta -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-xs grid grid-cols-2 gap-3">
+            <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Datos del Cliente</span>
+                <p class="font-bold text-slate-900 text-sm mt-0.5">{{ client }}</p>
+                <p class="text-slate-600 font-mono">C.I. / RIF: <strong>V-{{ rif }}</strong></p>
+                <p class="text-slate-500">Dirección: Carúpano, Estado Sucre</p>
+            </div>
+            <div class="text-right">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Condiciones de Operación</span>
+                <p class="font-semibold text-slate-800 mt-0.5">Condición: <strong>CONTADO</strong></p>
+                <p class="text-slate-600">Caja: <strong>Caja Principal #01</strong></p>
+                <p class="text-slate-600">Forma de Pago: <strong>Punto de Venta / Efectivo</strong></p>
+            </div>
+        </div>
+
+        <!-- Tabla de Productos / Detalle -->
+        <div class="mb-5">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-slate-900 text-white uppercase text-[10px] tracking-wider">
+                        <th class="py-2.5 px-3 rounded-l-lg">Cant.</th>
+                        <th class="py-2.5 px-3">Descripción del Producto</th>
+                        <th class="py-2.5 px-3 text-right">Precio Unit.</th>
+                        <th class="py-2.5 px-3 text-right rounded-r-lg">Total Renglón</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for p in products %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-2.5 px-3 font-bold font-mono text-slate-900">{{ p.cant }}</td>
+                        <td class="py-2.5 px-3 font-semibold text-slate-800">
+                            {{ p.name }}
+                            <span class="text-[10px] text-slate-600 font-normal block">(G) Alícuota General</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-mono text-slate-600">${{ p.price }}</td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                            ${{ "%.2f"|format(p.cant * (p.price|float)) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
-        <div class="tarifes">
 
-        </div>
-        <div class="bill_total">
-            <div class="total">
-                <p>TOTAL</p>
-                <p>{{ price_total }}</p>
+        <!-- Liquidación de Totales -->
+        <div class="border-t-2 border-slate-900 pt-3 mb-6">
+            <div class="flex justify-end">
+                <div class="w-64 space-y-1.5 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Subtotal Exento / Exonerado:</span>
+                        <span class="font-mono">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Base Imponible (G 16%):</span>
+                        <span class="font-mono">{{ price_total }}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>IVA Incluido:</span>
+                        <span class="font-mono">Incluido</span>
+                    </div>
+                    <div class="border-t border-slate-300 pt-2 flex justify-between items-baseline text-slate-900">
+                        <span class="text-sm font-black uppercase">TOTAL A PAGAR:</span>
+                        <span class="text-xl font-black font-mono text-emerald-600">{{ price_total }}</span>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Pie Fiscal y Términos -->
+        <div class="border-t border-dashed border-slate-300 pt-4 text-center text-[10px] text-slate-600 space-y-1">
+            <p class="font-bold text-slate-700 uppercase">¡GRACIAS POR SU COMPRA EN TU SUPERMERCADO!</p>
+            <p>Este documento constituye factura comercial válida emitida conforme a las normas fiscales vigentes.</p>
+            <p class="font-mono text-slate-600">Serial Impresora / Hash Fiscal: TS-{{ bill_id }}8902-SENIAT-2026</p>
+            
+            <div class="pt-2 flex items-center justify-center gap-2 text-slate-600 font-mono text-[9px]">
+                <span>*** COPIA CLIENTE ***</span>
+                <span>•</span>
+                <span>ORIGINAL</span>
+            </div>
+        </div>
+
     </div>
+
 </body>
+</html>
+
+</html>

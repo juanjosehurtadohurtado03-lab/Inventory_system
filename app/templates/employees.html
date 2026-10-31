@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Empleados - TU SUPERMERCADO</title>
+    <!-- Tailwind CSS vía CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slateCustom: '#0f172a',
+                        cardBg: '#1e293b',
+                        cardHover: '#24334b',
+                        emeraldAccent: '#10b981',
+                        accentIndigo: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slateCustom text-slate-100 min-h-screen font-sans antialiased selection:bg-emeraldAccent selection:text-slate-950">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Barra de Navegación Principal con Branding TU SUPERMERCADO -->
+    <nav class="sticky top-0 z-40 bg-cardBg/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Branding TU SUPERMERCADO -->
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2.5 group">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition transform">
+                            🛒
+                        </div>
+                        <div>
+                            <span class="text-base font-extrabold tracking-tight text-white block leading-tight">TU SUPERMERCADO</span>
+                            <span class="text-[10px] text-emerald-400 uppercase tracking-widest block font-medium">Gestión de Personal & Nómina</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Menú Central con Dropdown de Módulos -->
+                <div class="hidden md:flex items-center gap-2">
+                    <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Inicio
+                    </a>
+
+                    <!-- MENÚ DESPLEGABLE DE MÓDULOS -->
+                    <div class="relative" id="modulesDropdownContainer">
+                        <button onclick="toggleDropdown('modulesDropdown')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition flex items-center gap-1.5 focus:outline-none">
+                            <span>Módulos del Sistema</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="modulesDropdown" class="hidden absolute left-0 mt-2 w-72 rounded-2xl bg-cardBg border border-slate-700 shadow-2xl p-2 z-50 animate-in fade-in zoom-in duration-150">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase px-3 py-1.5 tracking-wider">
+                                Módulos Operativos
+                            </div>
+                            
+                            <a href="/sales/sale/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group">
+                                <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20">
+                                    🛒
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-emerald-300">Punto de Venta & Caja</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Cobro de compras y tickets</p>
+                                </div>
+                            </a>
+
+                            <a href="/products/management/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500/20">
+                                    📦
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-indigo-300">Inventario y Almacén</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Catálogo y existencias</p>
+                                </div>
+                            </a>
+
+                            <a href="/employees/" class="flex items-start gap-3 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                                    👥
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-indigo-300">Gestión de Empleados (Activo)</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Personal, turnos y cargos</p>
+                                </div>
+                            </a>
+
+                            <div class="border-t border-slate-700/60 my-1"></div>
+
+                            <a href="/#estadisticas" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                                <span class="text-amber-400">📊</span>
+                                <span>Ver Estadísticas de Ventas</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="/sales/sale/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Caja & Ventas
+                    </a>
+                    <a href="/products/management/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Inventario
+                    </a>
+                </div>
+
+                <!-- Info y Hora en Vivo -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span id="liveClock" class="text-xs font-mono font-bold text-white">00:00:00</span>
+                        <span class="text-[10px] text-slate-400">Panel Administrativo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">👥</span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Gestión de Empleados</h1>
+                </div>
+                <p class="text-sm text-slate-400 mt-1">
+                    Directorio del personal de TU SUPERMERCADO, asignación de turnos, cargos y control de estado
+                </p>
+            </div>
+
+            <button onclick="openEmployeeModal('create')" class="bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-200 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+                <span>➕ Registrar Nuevo Empleado</span>
+            </button>
+        </header>
+
+        <!-- Métricas Rápidas de Personal -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Total en Nómina</p>
+                    <p class="text-2xl font-bold text-white mt-1">{{ total_employees }}</p>
+                </div>
+                <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">👥</div>
+            </div>
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Personal Activo</p>
+                    <p class="text-2xl font-bold text-emeraldAccent mt-1">{{ active_count }}</p>
+                </div>
+                <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">✓</div>
+            </div>
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">En Turno Ahora</p>
+                    <p class="text-2xl font-bold text-amber-400 mt-1">{{ on_shift_count }}</p>
+                </div>
+                <div class="p-3 bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/20">⏱</div>
+            </div>
+            <div class="bg-cardBg border border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase text-slate-400">Cajeros Registrados</p>
+                    <p class="text-2xl font-bold text-sky-400 mt-1">{{ cashiers_count }}</p>
+                </div>
+                <div class="p-3 bg-sky-500/10 text-sky-400 rounded-lg border border-sky-500/20">💳</div>
+            </div>
+        </div>
+
+        <!-- Tabla / Directorio de Empleados -->
+        <div class="bg-cardBg rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+            <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Directorio de Personal</h3>
+                <input 
+                    type="text" 
+                    id="employeeSearch" 
+                    oninput="filterEmployeesTable()" 
+                    placeholder="Filtrar por nombre, cédula o cargo..." 
+                    class="w-full sm:w-72 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emeraldAccent"
+                >
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-800/60 text-slate-400 uppercase tracking-wider border-b border-slate-700 select-none">
+                            <th class="py-3 px-5">ID</th>
+                            <th class="py-3 px-5">Empleado</th>
+                            <th class="py-3 px-5">Cédula</th>
+                            <th class="py-3 px-5">Cargo / Rol</th>
+                            <th class="py-3 px-5">Horario de Turno</th>
+                            <th class="py-3 px-5">Estado</th>
+                            <th class="py-3 px-5 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800" id="employeesTableBody">
+                        {% if employees and employees|length > 0 %}
+                            {% for emp in employees %}
+                            <tr class="employee-row hover:bg-slate-800/40 transition" 
+                                data-id="{{ emp.id }}" 
+                                data-name="{{ emp.name }}" 
+                                data-ci="{{ emp.ci }}" 
+                                data-role="{{ emp.role }}"
+                                data-shift="{{ emp.shift }}"
+                                data-status="{{ emp.status }}"
+                                data-phone="{{ emp.phone or '' }}"
+                                data-email="{{ emp.email or '' }}">
+                                <td class="py-3.5 px-5 font-mono text-slate-400">#{{ emp.id }}</td>
+                                <td class="py-3.5 px-5 font-semibold text-white">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-7 w-7 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold flex items-center justify-center text-[10px]">
+                                            {{ emp.name[:2]|upper }}
+                                        </div>
+                                        <div>
+                                            <span>{{ emp.name }}</span>
+                                            {% if emp.phone %}
+                                                <span class="block text-[10px] text-slate-400">{{ emp.phone }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-5 font-mono text-slate-300">V-{{ emp.ci }}</td>
+                                <td class="py-3.5 px-5 font-medium text-slate-200">
+                                    <span class="bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700">
+                                        {{ emp.role }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-5 text-slate-300">{{ emp.shift }}</td>
+                                <td class="py-3.5 px-5">
+                                    {% if emp.status == 'En Turno' %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emeraldAccent"></span> {{ emp.status }}
+                                        </span>
+                                    {% elif emp.status == 'Disponible' %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                            {{ emp.status }}
+                                        </span>
+                                    {% elif emp.status == 'Inactivo' %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                            {{ emp.status }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                            {{ emp.status }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-5 text-right space-x-1.5 whitespace-nowrap">
+                                    <!-- Cambiar estado rápido -->
+                                    <select onchange="updateEmployeeStatus({{ emp.id }}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-300 focus:outline-none focus:border-emeraldAccent">
+                                        <option value="En Turno" {% if emp.status == 'En Turno' %}selected{% endif %}>En Turno</option>
+                                        <option value="Disponible" {% if emp.status == 'Disponible' %}selected{% endif %}>Disponible</option>
+                                        <option value="En Almacén" {% if emp.status == 'En Almacén' %}selected{% endif %}>En Almacén</option>
+                                        <option value="En Almuerzo" {% if emp.status == 'En Almuerzo' %}selected{% endif %}>En Almuerzo</option>
+                                        <option value="Inactivo" {% if emp.status == 'Inactivo' %}selected{% endif %}>Inactivo</option>
+                                    </select>
+                                    <button onclick="deactivateEmployee({{ emp.id }})" class="text-rose-400 hover:text-rose-300 p-1 font-semibold" title="Desactivar">
+                                        ✕
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyTableRow">
+                                <td colspan="7" class="py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="text-4xl mb-3">👥</span>
+                                        <p class="text-base font-semibold text-slate-300">No hay empleados registrados en la base de datos</p>
+                                        <p class="text-xs text-slate-500 mt-1 max-w-sm">Registra a los cajeros, supervisores y personal de almacén para gestionar sus turnos y desempeño.</p>
+                                        <button onclick="openEmployeeModal('create')" class="mt-4 bg-emeraldAccent hover:bg-emerald-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl transition">
+                                            + Registrar Primer Empleado
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Registrar Empleado -->
+    <div id="employeeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-cardBg border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in duration-150">
+            <button type="button" onclick="closeEmployeeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">✕</button>
+
+            <h3 class="text-lg font-bold text-white mb-1">Registrar Nuevo Empleado</h3>
+            <p class="text-xs text-slate-400 mb-5">Ingresa los datos para dar de alta en la base de datos de TU SUPERMERCADO.</p>
+
+            <form id="employeeForm" onsubmit="handleEmployeeSubmit(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre Completo <span class="text-rose-400">*</span></label>
+                    <input type="text" id="empName" required placeholder="Ej. Carlos Mendoza" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Cédula (C.I.) <span class="text-rose-400">*</span></label>
+                        <input type="text" id="empCi" required placeholder="Ej. 28123456" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emeraldAccent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Teléfono</label>
+                        <input type="text" id="empPhone" placeholder="Ej. 0412-1234567" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Cargo / Puesto <span class="text-rose-400">*</span></label>
+                        <select id="empRole" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                            <option value="Cajero">Cajero</option>
+                            <option value="Cajera Principal">Cajera Principal</option>
+                            <option value="Supervisor de Turno">Supervisor de Turno</option>
+                            <option value="Gestor de Almacén">Gestor de Almacén</option>
+                            <option value="Atención al Cliente">Atención al Cliente</option>
+                            <option value="Gerente de Tienda">Gerente de Tienda</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Horario de Turno <span class="text-rose-400">*</span></label>
+                        <select id="empShift" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                            <option value="Mañana (07:00 - 15:00)">Mañana (07:00 - 15:00)</option>
+                            <option value="Tarde (14:00 - 22:00)">Tarde (14:00 - 22:00)</option>
+                            <option value="Noche (21:00 - 05:00)">Noche (21:00 - 05:00)</option>
+                            <option value="Completo (08:00 - 17:00)">Completo (08:00 - 17:00)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Correo Electrónico (Opcional)</label>
+                    <input type="email" id="empEmail" placeholder="empleado@tusupermercado.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emeraldAccent">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t border-slate-700/60 mt-4">
+                    <button type="button" onclick="closeEmployeeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-semibold transition">Cancelar</button>
+                    <button type="submit" id="btnSubmitEmp" class="bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-500/20">Guardar Empleado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('modulesDropdownContainer');
+            if (container && !container.contains(e.target)) {
+                const dropdown = document.getElementById('modulesDropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) clockEl.innerText = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgClasses = {
+                success: 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200',
+                error: 'bg-rose-950/90 border-rose-500/40 text-rose-200',
+                warning: 'bg-amber-950/90 border-amber-500/40 text-amber-200',
+                info: 'bg-slate-800/90 border-slate-700 text-slate-200'
+            };
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${bgClasses[type] || bgClasses.info}`;
+            toast.innerHTML = `<span class="font-bold text-sm">ℹ</span><span class="flex-1">${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function openEmployeeModal() {
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeModal').classList.remove('hidden');
+            document.getElementById('employeeModal').classList.add('flex');
+            document.getElementById('empName').focus();
+        }
+
+        function closeEmployeeModal() {
+            document.getElementById('employeeModal').classList.add('hidden');
+            document.getElementById('employeeModal').classList.remove('flex');
+        }
+
+        async function handleEmployeeSubmit(event) {
+            event.preventDefault();
+            const payload = {
+                name: document.getElementById('empName').value.trim(),
+                ci: document.getElementById('empCi').value.trim(),
+                phone: document.getElementById('empPhone').value.trim() || null,
+                email: document.getElementById('empEmail').value.trim() || null,
+                role: document.getElementById('empRole').value,
+                shift: document.getElementById('empShift').value,
+                status: 'En Turno'
+            };
+
+            const btn = document.getElementById('btnSubmitEmp');
+            btn.disabled = true;
+            btn.innerText = 'Guardando...';
+
+            try {
+                const response = await fetch('/employees/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showToast('Empleado registrado con éxito.', 'success');
+                    closeEmployeeModal();
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    let errMsg = 'Error al registrar el empleado.';
+                    try {
+                        const errData = await response.json();
+                        if (errData.detail) errMsg = errData.detail;
+                    } catch (_) {}
+                    showToast(errMsg, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error de conexión con el servidor.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Guardar Empleado';
+            }
+        }
+
+        async function updateEmployeeStatus(id, newStatus) {
+            try {
+                const response = await fetch(`/employees/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (response.ok) {
+                    showToast(`Estado actualizado a: ${newStatus}`, 'success');
+                } else {
+                    showToast('No se pudo actualizar el estado.', 'error');
+                }
+            } catch (e) {
+                showToast('Error de conexión al actualizar estado.', 'error');
+            }
+        }
+
+        async function deactivateEmployee(id) {
+            if (!confirm(`¿Seguro que deseas desactivar al empleado #${id}?`)) return;
+            try {
+                const response = await fetch(`/employees/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast('Empleado desactivado.', 'success');
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    showToast('No se pudo desactivar el empleado.', 'error');
+                }
+            } catch (e) {
+                showToast('Error al conectar con el servidor.', 'error');
+            }
+        }
+
+        function filterEmployeesTable() {
+            const query = document.getElementById('employeeSearch').value.trim().toLowerCase();
+            const rows = document.querySelectorAll('.employee-row');
+            rows.forEach(row => {
+                const name = (row.dataset.name || '').toLowerCase();
+                const ci = (row.dataset.ci || '').toLowerCase();
+                const role = (row.dataset.role || '').toLowerCase();
+                if (!query || name.includes(query) || ci.includes(query) || role.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

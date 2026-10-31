@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, field_validator, field_serializer, ConfigDict
 from app.schemas.sale_details import SaleDetailsResponse
+from decimal import Decimal
 from enum import Enum
 from typing import Optional
 from datetime import datetime
@@ -28,7 +29,7 @@ class SaleResponde(BaseModel):
     date: datetime
     time: datetime
     ci_customer: str
-    total: int
+    total: Decimal
     status: str
     sale_details: list[SaleDetailsResponse]
     

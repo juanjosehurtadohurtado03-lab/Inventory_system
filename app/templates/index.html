@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TU SUPERMERCADO - Panel de Gestión y Control</title>
+    <!-- Tailwind CSS vía CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slateCustom: '#0f172a',
+                        cardBg: '#1e293b',
+                        cardHover: '#24334b',
+                        emeraldAccent: '#10b981',
+                        accentIndigo: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slateCustom text-slate-100 min-h-screen font-sans antialiased selection:bg-emeraldAccent selection:text-slate-950">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Barra de Navegación Principal con Branding TU SUPERMERCADO -->
+    <nav class="sticky top-0 z-40 bg-cardBg/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Branding TU SUPERMERCADO -->
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2.5 group">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition transform">
+                            🛒
+                        </div>
+                        <div>
+                            <span class="text-base font-extrabold tracking-tight text-white block leading-tight">TU SUPERMERCADO</span>
+                            <span class="text-[10px] text-emerald-400 uppercase tracking-widest block font-medium">Panel de Gestión Integral</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Menú Central con Dropdown de Módulos Operativos -->
+                <div class="hidden md:flex items-center gap-2">
+                    <a href="/" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-emeraldAccent bg-emerald-500/10 border border-emerald-500/20">
+                        Inicio
+                    </a>
+
+                    <!-- MENÚ DESPLEGABLE DE MÓDULOS DEL SUPERMERCADO -->
+                    <div class="relative" id="modulesDropdownContainer">
+                        <button onclick="toggleDropdown('modulesDropdown')" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5 focus:outline-none">
+                            <span>Módulos de Gestión</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="modulesDropdown" class="hidden absolute left-0 mt-2 w-72 rounded-2xl bg-cardBg border border-slate-700 shadow-2xl p-2 z-50 animate-in fade-in zoom-in duration-150">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase px-3 py-1.5 tracking-wider">
+                                Módulos del Supermercado
+                            </div>
+                            
+                            <!-- Caja / POS -->
+                            <a href="/sales/sale/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group">
+                                <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20">
+                                    🛒
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-emerald-300">Punto de Venta & Caja</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Cobro de compras, tickets e inventario en caja</p>
+                                </div>
+                            </a>
+
+                            <!-- Inventario -->
+                            <a href="/products/management/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500/20">
+                                    📦
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-indigo-300">Gestión de Inventario</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Catálogo de productos, existencias y reabastecimiento</p>
+                                </div>
+                            </a>
+
+                            <!-- Empleados -->
+                            <a href="/employees/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 group-hover:bg-sky-500/20">
+                                    👥
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-sky-300">Gestión de Empleados</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Directorio, turnos, cargos y desempeño</p>
+                                </div>
+                            </a>
+
+                            <div class="border-t border-slate-700/60 my-1"></div>
+
+                            <a href="#estadisticas" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                                <span class="text-amber-400">📊</span>
+                                <span>Estadísticas de Compras y Ventas</span>
+                            </a>
+                            <a href="#analisis-comportamiento" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                                <span class="text-rose-400">🔍</span>
+                                <span>¿Por qué los clientes no compran?</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="/sales/sale/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Caja & Ventas
+                    </a>
+                    <a href="/products/management/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Inventario
+                    </a>
+                    <a href="/employees/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Empleados
+                    </a>
+                </div>
+
+                <!-- Info y Hora en Vivo -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span id="liveClock" class="text-xs font-mono font-bold text-white">00:00:00</span>
+                        <span id="liveDate" class="text-[10px] text-slate-400">Cargando fecha...</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 pl-3 border-l border-slate-700">
+                        <div class="h-9 w-9 rounded-full bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold flex items-center justify-center text-xs shadow">
+                            🏪
+                        </div>
+                        <div class="hidden lg:block text-left">
+                            <span class="text-xs font-bold text-white block leading-tight">TU SUPERMERCADO</span>
+                            <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emeraldAccent animate-pulse"></span> Sistema Activo
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- Sección Bienvenida / Hero del Supermercado -->
+        <section class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-cardBg via-slate-800 to-emerald-950/40 border border-slate-700/80 p-6 sm:p-8 shadow-2xl">
+            <div class="relative z-10 max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-4">
+                    <span>🛒 TU SUPERMERCADO • Control Central</span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                    Panel Operativo de <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">TU SUPERMERCADO</span>
+                </h1>
+                <p class="text-slate-300 text-sm sm:text-base mt-2">
+                    Gestiona las ventas en caja, supervisa las existencias en almacén, administra a los empleados y analiza estadísticas descriptivas reales sobre los hábitos de compra de tus clientes.
+                </p>
+
+                <!-- Accesos Directos Operativos -->
+                <div class="flex flex-wrap gap-3 mt-6">
+                    <a href="/sales/sale/" class="bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-200 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+                        <span>🛒 Abrir Caja / Facturar Venta</span>
+                    </a>
+                    
+                    <a href="/products/management/" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-600/20 transition-all duration-200 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+                        <span>📦 Administrar Productos & Stock</span>
+                    </a>
+
+                    <a href="/employees/" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center gap-1.5">
+                        <span>👥 Gestionar Empleados</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+            <div class="absolute right-20 top-0 h-48 w-48 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
+        </section>
+
+        <!-- SECCIÓN 1: ESTADÍSTICAS DESCRIPTIVAS REALES DE VENTAS E INVENTARIO -->
+        <section id="estadisticas" class="pt-2 scroll-mt-20">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>📊</span> Métricas y Estadísticas Reales del Supermercado
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Calculadas dinámicamente con las ventas, productos y registros reales en la base de datos</p>
+                </div>
+                <div class="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-lg">
+                    ● Datos 100% reales en BD
+                </div>
+            </div>
+
+            <!-- KPIs Principales Reales -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Recaudación Real -->
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Recaudación Cobrada</span>
+                        <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">💰</div>
+                    </div>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span class="text-2xl font-black text-white">${{ "%.2f"|format(total_revenue) }}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Generado por <strong>{{ paid_sales_count }}</strong> ventas pagadas</p>
+                </div>
+
+                <!-- Ticket Promedio Real -->
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Ticket Promedio</span>
+                        <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/20">📈</div>
+                    </div>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span class="text-2xl font-black text-white">${{ "%.2f"|format(ticket_promedio) }}</span>
+                        <span class="text-xs text-slate-400">/ compra</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Gasto medio de cada cliente en caja</p>
+                </div>
+
+                <!-- Valor Total del Inventario -->
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Valor de Almacén</span>
+                        <div class="p-2 bg-sky-500/10 text-sky-400 rounded-lg border border-sky-500/20">📦</div>
+                    </div>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span class="text-2xl font-black text-white">${{ "%.2f"|format(valor_inventario) }}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1"><strong>{{ total_stock }}</strong> unidades en <strong>{{ total_products }}</strong> productos activos</p>
+                </div>
+
+                <!-- Tasa de Conversión Real -->
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase text-slate-400">Efectividad de Ventas</span>
+                        <div class="p-2 {% if tasa_conversion >= 70 %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20{% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %} rounded-lg border">🎯</div>
+                    </div>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span class="text-2xl font-black text-white">{{ tasa_conversion }}%</span>
+                        <span class="text-xs text-slate-400">éxito</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">
+                        {{ paid_sales_count }} pagadas de {{ total_sales_count }} órdenes iniciadas
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: ANÁLISIS DE POR QUÉ LOS CLIENTES NO COMPRAN VS LO QUE MÁS COMPRAN -->
+        <section id="analisis-comportamiento" class="pt-2 scroll-mt-20">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>🔍</span> Inteligencia Comercial: ¿Qué compran y por qué no compran?
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Información útil basada en cancelaciones, desabastecimiento, rotación y productos estrella
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- PANEL A: ¿POR QUÉ LOS CLIENTES NO COMPRAN? (FUGA DE VENTAS) -->
+                <div class="bg-cardBg border border-rose-900/40 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 text-lg">⚠️</span>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Causas de Pérdida / No Compra</h3>
+                                    <p class="text-xs text-slate-400">Factores reales que frenan la facturación</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono font-bold text-rose-400 bg-rose-950/60 px-2.5 py-1 rounded-md border border-rose-800">
+                                {{ tasa_cancelacion }}% Tasa de Cancelación
+                            </span>
+                        </div>
+
+                        <div class="space-y-3.5 text-xs">
+                            <!-- Motivo 1: Ventas Canceladas / Carritos Abandonados -->
+                            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-bold text-slate-200">1. Ventas Canceladas / Carritos no concretados</span>
+                                    <span class="font-bold text-rose-400">${{ "%.2f"|format(lost_revenue) }} perdido</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    Se registraron <strong>{{ cancelled_sales_count }}</strong> órdenes canceladas. Representa dinero que el cliente tuvo intención de gastar pero la venta se anuló (cambio de decisión o falta de fondos).
+                                </p>
+                            </div>
+
+                            <!-- Motivo 2: Ruptura de Stock / Desabastecimiento -->
+                            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-bold text-slate-200">2. Ruptura de Stock (Agotados en Almacén)</span>
+                                    <span class="font-bold {% if out_of_stock_count > 0 %}text-amber-400{% else %}text-emerald-400{% endif %}">
+                                        {{ out_of_stock_count }} producto(s) en 0
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    {% if out_of_stock_count > 0 %}
+                                        El cliente no puede comprar lo que no hay en los estantes. Hay <strong>{{ out_of_stock_count }}</strong> artículos sin inventario y <strong>{{ low_stock_count }}</strong> en stock crítico (&le; 5 unidades).
+                                    {% else %}
+                                        No hay productos totalmente agotados en este momento. Sin embargo, hay <strong>{{ low_stock_count }}</strong> artículos con stock crítico (&le; 5 unidades).
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            <!-- Motivo 3: Productos Estancados (Sin Ventas) -->
+                            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-bold text-slate-200">3. Productos Estancados (Cero Rotación)</span>
+                                    <span class="font-bold text-indigo-400">{{ stagnant_count }} artículos</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    Productos en catálogo que <strong>no registran ventas</strong> pagadas. Representan capital inmovilizado en almacén.
+                                </p>
+                                {% if stagnant_products and stagnant_products|length > 0 %}
+                                <div class="mt-2 flex flex-wrap gap-1.5">
+                                    {% for p in stagnant_products %}
+                                        <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[10px] border border-slate-700">
+                                            {{ p.name }} (${{ p.price }})
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Recomendación: Reabastecer artículos en cero y promocionar productos sin movimiento.</span>
+                        <a href="/products/management/" class="text-emeraldAccent hover:underline font-bold whitespace-nowrap ml-2">Reabastecer →</a>
+                    </div>
+                </div>
+
+                <!-- PANEL B: LO QUE MÁS COMPRAN (TOP SELLERS REALES) -->
+                <div class="bg-cardBg border border-emerald-900/40 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-lg">🏆</span>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Productos Más Vendidos</h3>
+                                    <p class="text-xs text-slate-400">Artículos con mayor demanda real en caja</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-800">
+                                Ranking por Unidades
+                            </span>
+                        </div>
+
+                        {% if top_selling_products and top_selling_products|length > 0 %}
+                        <div class="space-y-3">
+                            {% for item in top_selling_products %}
+                            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs">
+                                        #{{ loop.index }}
+                                    </span>
+                                    <div>
+                                        <p class="text-xs font-bold text-white">{{ item.name }}</p>
+                                        <p class="text-[10px] text-slate-400">En {{ item.orders_count }} compra(s) registrada(s)</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-black text-emeraldAccent">{{ item.units_sold }} unids.</span>
+                                    <p class="text-[11px] text-slate-300 font-mono font-semibold">${{ "%.2f"|format(item.revenue) }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="py-12 text-center text-slate-500 text-xs">
+                            <span class="text-3xl block mb-2">🛒</span>
+                            Aún no hay compras pagadas suficientes para generar el ranking.<br>
+                            Las ventas cobradas en el terminal se reflejarán aquí automáticamente.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Clientes únicos compradores: <strong class="text-white">{{ unique_customers_count }}</strong></span>
+                        <a href="/sales/sale/" class="text-emeraldAccent hover:underline font-bold">Ir a Punto de Venta →</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: GESTIÓN DE EMPLEADOS REALES DESDE LA BASE DE DATOS -->
+        <section id="empleados" class="pt-2 scroll-mt-20">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>👥</span> Personal y Empleados de TU SUPERMERCADO
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Empleados registrados en la base de datos (con control de turnos y cargos)</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="/employees/" class="bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20">
+                        <span>Ver Módulo Completo</span>
+                        <span>→</span>
+                    </a>
+                </div>
+            </div>
+
+            {% if employees and employees|length > 0 %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                {% for emp in employees %}
+                <div class="bg-cardBg border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="h-10 w-10 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold flex items-center justify-center text-xs">
+                                {{ emp.name[:2]|upper }}
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-white">{{ emp.name }}</h4>
+                                <p class="text-[11px] text-slate-400">{{ emp.role }}</p>
+                            </div>
+                        </div>
+
+                        <div class="py-2 border-y border-slate-800 text-xs space-y-1 text-slate-300">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">C.I.:</span>
+                                <span class="font-mono text-white">V-{{ emp.ci }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Turno:</span>
+                                <span>{{ emp.shift }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Estado:</span>
+                                <span class="font-semibold text-emerald-400">{{ emp.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800 text-right">
+                        <a href="/employees/" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
+                            Ver detalles en Personal →
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Estado Vacío cuando no hay empleados en BD -->
+            <div class="bg-cardBg border border-dashed border-slate-700 rounded-2xl p-8 text-center">
+                <span class="text-4xl block mb-2">👥</span>
+                <h3 class="text-base font-bold text-white">Aún no hay empleados registrados en la base de datos</h3>
+                <p class="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4">
+                    Registra a los cajeros, supervisores y personal de almacén de TU SUPERMERCADO para asignar turnos y llevar el control de personal.
+                </p>
+                <a href="/employees/" class="inline-flex items-center gap-2 bg-emeraldAccent hover:bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">
+                    <span>➕ Registrar Primer Empleado</span>
+                </a>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- SECCIÓN 4: ÚLTIMAS VENTAS REGISTRADAS -->
+        <section class="pt-2">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                        <span>🧾</span> Transacciones Recientes en Caja
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Últimas operaciones registradas en el supermercado</p>
+                </div>
+                <a href="/sales/sale/" class="text-xs font-semibold text-emeraldAccent hover:text-emerald-300">
+                    Ir al Punto de Venta →
+                </a>
+            </div>
+
+            <div class="bg-cardBg rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-800/60 text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-3 px-5">Factura ID</th>
+                                <th class="py-3 px-5">Cliente (C.I.)</th>
+                                <th class="py-3 px-5">Total Facturado</th>
+                                <th class="py-3 px-5">Estado</th>
+                                <th class="py-3 px-5 text-right">Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            {% if recent_sales and recent_sales|length > 0 %}
+                                {% for sale in recent_sales %}
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="py-3 px-5 font-mono text-slate-400 font-bold">#{{ "%04d"|format(sale.id) }}</td>
+                                    <td class="py-3 px-5 font-medium text-white">V-{{ sale.ci_customer }}</td>
+                                    <td class="py-3 px-5 font-bold text-slate-200">${{ sale.total }}</td>
+                                    <td class="py-3 px-5">
+                                        {% if sale.status == 'PAGADO' %}
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                ✓ PAGADO
+                                            </span>
+                                        {% elif sale.status == 'PENDIENTE' %}
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                                ⏳ PENDIENTE
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                                ✕ CANCELADO
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-5 text-right">
+                                        <a href="/sales/sale/invoice/{{ sale.id }}" target="_blank" class="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 font-semibold bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 transition">
+                                            <span>Ver Factura</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-slate-500">
+                                        No hay transacciones registradas todavía.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('modulesDropdownContainer');
+            if (container && !container.contains(e.target)) {
+                const dropdown = document.getElementById('modulesDropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            
+            const clockEl = document.getElementById('liveClock');
+            const dateEl = document.getElementById('liveDate');
+            if (clockEl) clockEl.innerText = timeStr;
+            if (dateEl) dateEl.innerText = dateStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgClasses = {
+                success: 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200',
+                error: 'bg-rose-950/90 border-rose-500/40 text-rose-200',
+                warning: 'bg-amber-950/90 border-amber-500/40 text-amber-200',
+                info: 'bg-slate-800/90 border-slate-700 text-slate-200'
+            };
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${bgClasses[type] || bgClasses.info}`;
+            toast.innerHTML = `<span>ℹ</span><span class="flex-1">${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('modulesDropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

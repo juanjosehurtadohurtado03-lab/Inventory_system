@@ -25,6 +25,116 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- Barra de Navegación Principal -->
+    <nav class="sticky top-0 z-40 bg-cardBg/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Marca & Logo -->
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2.5 group">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition transform">
+                            🛒
+                        </div>
+                        <div>
+                            <span class="text-base font-extrabold tracking-tight text-white block leading-tight">TU SUPERMERCADO</span>
+                            <span class="text-[10px] text-emerald-400 uppercase tracking-widest block font-medium">Gestión de Almacén e Inventario</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Menú Central con Dropdown de Módulos -->
+                <div class="hidden md:flex items-center gap-2">
+                    <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Inicio
+                    </a>
+
+                    <!-- MENÚ DESPLEGABLE DE MÓDULOS -->
+                    <div class="relative" id="modulesDropdownContainer">
+                        <button onclick="toggleDropdown('modulesDropdown')" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition flex items-center gap-1.5 focus:outline-none">
+                            <span>Módulos y Rutas</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="modulesDropdown" class="hidden absolute left-0 mt-2 w-72 rounded-2xl bg-cardBg border border-slate-700 shadow-2xl p-2 z-50 animate-in fade-in zoom-in duration-150">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase px-3 py-1.5 tracking-wider">
+                                Routers del Sistema
+                            </div>
+                            
+                            <a href="/products/management/" class="flex items-start gap-3 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 transition group">
+                                <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-indigo-300">Gestión de Inventario (Activo)</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Catálogo y reabastecimiento</p>
+                                    <span class="text-[10px] font-mono text-indigo-400/80">/products/management/</span>
+                                </div>
+                            </a>
+
+                            <a href="/sales/sale/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-emerald-300">Punto de Venta & Facturas</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Terminal POS y cobros</p>
+                                    <span class="text-[10px] font-mono text-emerald-400/80">/sales/sale/</span>
+                                </div>
+                            </a>
+
+                            <a href="/employees/" class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 transition group mt-1">
+                                <div class="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 group-hover:bg-sky-500/20">
+                                    👥
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white group-hover:text-sky-300">Gestión de Empleados</div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Turnos, cargos y personal</p>
+                                </div>
+                            </a>
+
+                            <div class="border-t border-slate-700/60 my-1"></div>
+
+                            <a href="/#estadisticas" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                                <span class="text-amber-400">📊</span>
+                                <span>Ver Estadísticas</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="/products/management/" class="px-3 py-2 rounded-lg text-sm font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 transition">
+                        Inventario
+                    </a>
+                    <a href="/sales/sale/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Ventas & POS
+                    </a>
+                    <a href="/employees/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                        Empleados
+                    </a>
+                </div>
+
+                <!-- Info Empleado & Hora en Vivo -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span id="liveClock" class="text-xs font-mono font-bold text-white">00:00:00</span>
+                        <span class="text-[10px] text-indigo-400 font-semibold">Almacén Central</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 pl-3 border-l border-slate-700">
+                        <div class="h-9 w-9 rounded-full bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold flex items-center justify-center text-xs shadow">
+                            INV
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Header -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-700/80 pb-6">
@@ -334,6 +444,30 @@
 
     <!-- JavaScript -->
     <script>
+        // Dropdown de navegación
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            if (dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('modulesDropdownContainer');
+            if (container && !container.contains(e.target)) {
+                const dropdown = document.getElementById('modulesDropdown');
+                if (dropdown) dropdown.classList.add('hidden');
+            }
+        });
+
+        // Reloj en vivo
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) clockEl.innerText = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         // Determinación dinámica de la ruta base del router según Jinja2 y la URL actual
         const JINJA_PATH = "{{ request.url.path }}";
         const CURRENT_PATH = window.location.pathname.replace(/\/+$/, '');

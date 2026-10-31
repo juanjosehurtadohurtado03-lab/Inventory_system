@@ -33,6 +33,15 @@ class CRUD_sale:
     def search_sale_by_id(self, sale_id:int):
         return self.db.query(SaleModel).filter(SaleModel.id == sale_id, SaleModel.status.in_(['PENDIENTE'])).first()
     
+    def get_sale_by_id(self, sale_id: int):
+        return self.db.query(SaleModel).filter(SaleModel.id == sale_id).first()
+
+    def get_all_sales(self, limit: int = 50):
+        return self.db.query(SaleModel).order_by(SaleModel.id.desc()).limit(limit).all()
+
+    def get_pending_sales(self):
+        return self.db.query(SaleModel).filter(SaleModel.status == 'PENDIENTE').order_by(SaleModel.id.desc()).all()
+    
     def update_status_to_paid(self, sale: SaleModel, status: str):
         sale.status = status
         self.db.commit()

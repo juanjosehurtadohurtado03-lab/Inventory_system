@@ -82,25 +82,25 @@ class SaleService:
         # incluir sistema de factura.
     
     def _handle_cancelled(self, sale: SaleModel):
-        list_product_restock = []
         try:
             for item in sale.sale_details:
                 self.ProductService.add_update_stock(item.product_id, item.quantity)
-                product_detail = {
-                    'id': item.id,
-                    'name': item.name,
-                    'quantity': item.quantity,
-                    'price_unit': item.price_unit,
-                    'subtotal': item.subtotal
-                }
-                list_product_restock.append(product_detail)
             sale.status = SaleStatus.CANCELLED
             self.repo.db.commit()
             self.repo.db.refresh(sale)
-            return list_product_restock
+            return sale
         except SQLAlchemyError as e:
             self.repo.db.rollback()
             raise HTTPException(
-                status_code=404,
+                status_code=500,
                 detail=f'SQL Error: {e}'
             )
+
+    def get_all_sales(self, limit: int = 50):
+        return self.repo.get_all_sales(limit)
+
+    def get_pending_sales(self):
+        return self.repo.get_pending_sales()
+
+    def get_sale_by_id(self, sale_id: int):
+        return self.repo.get_sale_by_id(sale_id)
